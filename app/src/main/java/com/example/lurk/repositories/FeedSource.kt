@@ -32,6 +32,7 @@ class FeedSource(
                 author = it.data.author,
                 subreddit = it.data.subreddit,
                 type = Post.typeForPostHint(it.data.postHint),
+                comments = it.data.numComments,
                 ups = it.data.ups,
                 downs = it.data.downs,
                 url = it.data.url

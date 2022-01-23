@@ -15,7 +15,8 @@ val DarkColorPalette = darkColorScheme(
     primary = RedDark,
     onPrimary = Smoke,
     secondary = PurpleDark,
-    surface = Color.Black,
+    surface = Charcoal,
+    surfaceVariant = Color.Black,
     onSurface = Color.White,
 )
 
@@ -23,6 +24,8 @@ private val LightColorPalette = lightColorScheme(
     primary = RedLight,
     onPrimary = Color.Black,
     secondary = PurpleLight,
+    surface = Color.White,
+    surfaceVariant = OffWhite
 
     /* Other default colors to override
     onPrimary = Color.White,

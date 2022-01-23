@@ -1,10 +1,10 @@
 package com.example.lurk.ui_components
 
 import android.content.res.Configuration
+import android.view.MotionEvent
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,14 +12,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lurk.ui.theme.LurkTheme
 
+@ExperimentalComposeUiApi
 @Composable
 fun PillButton(
     clickEvent: () -> Unit,
@@ -40,27 +42,34 @@ fun PillButton(
         modifier = Modifier
             .scale(scale)
             .alpha(alpha)
-            .pointerInput(Unit) {
-                detectTapGestures(onPress = {
-                    currentState = ButtonState.PRESSED
-                    tryAwaitRelease()
-                    currentState = ButtonState.RELEASED
-                    clickEvent()
-                })
-            }
     )
     {
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
                 .padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
+                .pointerInteropFilter {
+                    var clicked = false
+                    when (it.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            currentState = ButtonState.PRESSED
+                            clicked = true
+                        }
+                        MotionEvent.ACTION_UP -> {
+                            currentState = ButtonState.RELEASED
+                            clicked = true
+                        }
+                    }
+                    clicked
+                }
         )
     }
 }
 
+@ExperimentalComposeUiApi
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun PillButtonPreviewLight() {
@@ -74,6 +83,7 @@ fun PillButtonPreviewLight() {
     }
 }
 
+@ExperimentalComposeUiApi
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PillButtonPreviewDark() {

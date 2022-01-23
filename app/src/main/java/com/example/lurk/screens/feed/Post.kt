@@ -7,6 +7,7 @@ data class Post(
     val author: String,
     val subreddit: String,
     val type: PostType,
+    val comments: Int,
     private val ups: Int,
     private val downs: Int,
     val url: String? // URL for post
@@ -38,6 +39,7 @@ data class Post(
             author = "DaisyDoo",
             subreddit = "LurkApp",
             type = PostType.TEXT,
+            comments = 587,
             ups = 10000,
             downs = 10000,
             url = null

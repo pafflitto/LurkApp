@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -34,10 +33,6 @@ fun ImagePostView(post: Post) {
             modifier = Modifier
                 .fillMaxSize()
                 .heightIn(0.dp, 600.dp)
-        )
-        RedditTitle(
-            text = post.title,
-            modifier = Modifier.padding(top = 8.dp)
         )
     }
 }
