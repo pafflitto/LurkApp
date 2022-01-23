@@ -2,7 +2,11 @@ package com.example.lurk.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF03DAC5)
+val Smoke = Color(0xFFF5F5F5)
+val Red = Color(0xFFE53735)
+val RedLight = Color(0xFFFF6E60)
+val RedDark = Color(0xFFAB000D)
+val Purple = Color(0xFF18227C)
+val PurpleLight = Color(0xFF514AAC)
+val PurpleDark = Color(0xFF00004F)
+val TransBlack = Color(0x88000000)
