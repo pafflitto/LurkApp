@@ -1,35 +1,28 @@
 package com.example.lurk.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material.ripple.RippleTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorPalette = darkColors(
+val DarkColorPalette = darkColorScheme(
     primary = RedDark,
     onPrimary = Smoke,
-    primaryVariant = Red,
     secondary = PurpleDark,
-    secondaryVariant = Purple,
     surface = Color.Black,
     onSurface = Color.White,
-
 )
 
-private val LightColorPalette = lightColors(
+private val LightColorPalette = lightColorScheme(
     primary = RedLight,
     onPrimary = Color.Black,
-    primaryVariant = Red,
     secondary = PurpleLight,
-    secondaryVariant = Purple,
-    surface = Color.White,
-    onSurface = Color.Black
 
     /* Other default colors to override
     onPrimary = Color.White,
@@ -42,7 +35,7 @@ private val LightColorPalette = lightColors(
 object LurkButtonRippleTheme : RippleTheme {
 
     @Composable
-    override fun defaultColor(): Color = MaterialTheme.colors.secondaryVariant
+    override fun defaultColor(): Color = MaterialTheme.colorScheme.primary
 
     @Composable
     override fun rippleAlpha(): RippleAlpha = RippleTheme.defaultRippleAlpha(
@@ -60,9 +53,8 @@ fun LurkTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable (
     }
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = colors,
         typography = Typography,
-        shapes = Shapes
     ) {
         CompositionLocalProvider(
             LocalRippleTheme provides LurkButtonRippleTheme,

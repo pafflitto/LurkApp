@@ -1,11 +1,11 @@
 package com.example.lurk.screens
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,11 +15,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import coil.annotation.ExperimentalCoilApi
-import com.example.lurk.screens.feed.Footer
-import com.example.lurk.screens.feed.ImagePostView
 import com.example.lurk.screens.feed.Post
-import com.example.lurk.screens.feed.Post.Companion.PostType.IMAGE
-import com.example.lurk.screens.feed.TextPostView
 import com.example.lurk.ui.theme.LurkTheme
 import kotlinx.coroutines.flow.Flow
 
@@ -56,21 +52,21 @@ fun Posts(posts: LazyPagingItems<Post>) {
 @Composable
 fun PostView(post: Post)
 {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = 6.dp,
-    ) {
-        Column {
-            when (post.type) {
-                IMAGE -> ImagePostView(post = post)
-                else -> TextPostView(post = post)
-            }
-            Footer(post)
-        }
-    }
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(horizontal = 4.dp),
+//        shape = RoundedCornerShape(8.dp),
+//        elevation = 6.dp,
+//    ) {
+//        Column {
+//            when (post.type) {
+//                IMAGE -> ImagePostView(post = post)
+//                else -> TextPostView(post = post)
+//            }
+//            Footer(post)
+//        }
+//    }
 }
 
 @ExperimentalCoilApi

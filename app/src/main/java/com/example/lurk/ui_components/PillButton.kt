@@ -8,9 +8,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.lurk.ui.theme.LurkTheme
 
 @Composable
@@ -53,11 +52,10 @@ fun PillButton(
     {
         Text(
             text = text,
-            style = MaterialTheme.typography.overline,
-            fontSize = 10.sp,
-            color = MaterialTheme.colors.onPrimary,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier
-                .border(1.dp, MaterialTheme.colors.primary, RoundedCornerShape(50))
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
                 .padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
         )
     }

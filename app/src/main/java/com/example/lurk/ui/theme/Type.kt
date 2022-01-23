@@ -1,6 +1,6 @@
 package com.example.lurk.ui.theme
 
-import androidx.compose.material.Typography
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -14,17 +14,17 @@ val PatuaOne = FontFamily(
 )
 
 val Typography = Typography(
-    body1 = TextStyle(
+    bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
     ),
-    h1 = TextStyle(
+    titleLarge = TextStyle(
         fontFamily = PatuaOne,
         fontWeight = FontWeight.Normal,
         fontSize = 48.sp
     ),
-    caption = TextStyle(
+    labelSmall = TextStyle(
         fontSize = 12.sp
     )
     /* Other default text styles to override
