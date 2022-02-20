@@ -47,9 +47,9 @@ fun PillButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier
-                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
+                .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(50))
                 .padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
                 .pointerInteropFilter {
                     var clicked = false
@@ -73,7 +73,7 @@ fun PillButton(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun PillButtonPreviewLight() {
-    LurkTheme(darkTheme = false) {
+    LurkTheme(useDarkTheme = false) {
         Surface {
             PillButton(
                 clickEvent = {},
@@ -87,7 +87,7 @@ fun PillButtonPreviewLight() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PillButtonPreviewDark() {
-    LurkTheme(darkTheme = true) {
+    LurkTheme(useDarkTheme = true) {
         Surface {
             PillButton(
                 clickEvent = {},

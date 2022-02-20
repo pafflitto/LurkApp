@@ -1,18 +1,20 @@
 package com.example.lurk.screens.feed
 
+import PostData
+import com.example.lurk.screens.feed.Post.Companion.PostType.IMAGE
+import com.example.lurk.screens.feed.Post.Companion.PostType.TEXT
 import kotlin.math.round
 
-data class Post(
-    val title: String,
-    val author: String,
-    val subreddit: String,
-    val type: PostType,
-    val comments: Int,
-    private val ups: Int,
-    private val downs: Int,
-    val url: String? // URL for post
-)
+open class Post(data: PostData)
 {
+    val title: String = data.title
+    val author: String = data.author
+    val subreddit: String = data.subreddit
+    val comments: Int = data.numComments
+    val voted: Voted = Voted.UpVoted
+    private val ups: Int = data.ups
+    private val downs: Int = data.downs
+
     val votes: String get() {
         val diff = ups - downs
         return if (diff / 1000 != 0) {
@@ -23,26 +25,74 @@ data class Post(
         }
     }
     companion object {
-        enum class PostType(val postHint: String) {
+        enum class Voted {
+            UpVoted,
+            DownVoted,
+            NoVote
+        }
+        private enum class PostType(val postHint: String) {
             IMAGE("image"),
             TEXT("");
         }
 
-        private val typeMap = mapOf(
-            "image" to PostType.IMAGE,
-            "" to PostType.TEXT
-        )
-        fun typeForPostHint(hint: String): PostType = typeMap[hint] ?: PostType.TEXT
+        private fun getType(data: PostData): PostType? {
+            return when {
+                data.isSelf -> TEXT
+                else -> typeMap[data.postHint]
+            }
+        }
 
-        val exampleTextPost = Post(
-            title = "Example of a reddit post's title",
-            author = "DaisyDoo",
-            subreddit = "LurkApp",
-            type = PostType.TEXT,
-            comments = 587,
-            ups = 10000,
-            downs = 10000,
-            url = null
+        private val typeMap = mapOf(
+            "image" to IMAGE,
+            "" to TEXT
         )
+
+        /**
+         * Function that creates an instance of a post with respect to its type
+         */
+        fun Build(data: PostData): Post {
+            return when(getType(data)) {
+                IMAGE -> ImagePost(data)
+                TEXT -> TextPost(data)
+                else -> Post(data)
+            }
+        }
+
+        val exampleTextPost = TextPost(
+            PostData(
+                title = "Example of a reddit post's title",
+                author = "DaisyDoo",
+                subreddit = "LurkApp",
+                numComments = 587,
+                ups = 10000,
+                downs = 10000,
+                selftext = "Example of a text post. GRACIE IS THE BEST GF OF ALL TIME. SHE MAKES ME LAUGH EVERYDAY. I WANT TO SNOG HER FACE"
+            )
+        )
+
+        val exampleImagePost = ImagePost(
+            PostData(
+                title = "Example of a reddit post's title",
+                author = "DaisyDoo",
+                subreddit = "LurkApp",
+                numComments = 587,
+                ups = 10000,
+                downs = 10000,
+                url = ""
+            )
+        )
+
     }
+}
+
+class TextPost(
+    data: PostData,
+): Post(data = data) {
+    val text = data.selftext
+}
+
+class ImagePost(
+    data: PostData
+): Post(data = data) {
+    val url: String = data.url // URL for post
 }

@@ -27,16 +27,7 @@ class FeedSource(
         )
 
         val posts = response?.data?.children?.map {
-            Post(
-                title = it.data.title,
-                author = it.data.author,
-                subreddit = it.data.subreddit,
-                type = Post.typeForPostHint(it.data.postHint),
-                comments = it.data.numComments,
-                ups = it.data.ups,
-                downs = it.data.downs,
-                url = it.data.url
-            )
+            Post.Build(it.data)
         } ?: emptyList()
 
         return LoadResult.Page(

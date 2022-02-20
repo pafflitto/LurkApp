@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import com.example.lurk.screens.FeedScreen
 import com.example.lurk.screens.LoginScreen
+import com.example.lurk.screens.feed.FeedScreen
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.viewmodels.FeedViewModel
 import com.example.lurk.viewmodels.MainViewModel

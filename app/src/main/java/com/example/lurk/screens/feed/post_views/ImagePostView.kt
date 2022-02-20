@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.post_views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -14,11 +14,13 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import coil.size.OriginalSize
 import com.example.lurk.R
+import com.example.lurk.screens.feed.ImagePost
+import com.example.lurk.screens.feed.Post
 import com.example.lurk.ui.theme.LurkTheme
 
 @ExperimentalCoilApi
 @Composable
-fun ImagePostView(post: Post) {
+fun ImagePostView(post: ImagePost) {
     Column {
         Image(
             painter = rememberImagePainter(
@@ -41,9 +43,9 @@ fun ImagePostView(post: Post) {
 @Preview
 @Composable
 fun PostContentPreviewDark() {
-    LurkTheme(darkTheme = false) {
+    LurkTheme(useDarkTheme = false) {
         Surface {
-            ImagePostView(post = Post.exampleTextPost)
+            ImagePostView(post = Post.exampleImagePost)
         }
     }
 }
