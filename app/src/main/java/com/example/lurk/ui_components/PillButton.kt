@@ -46,10 +46,10 @@ fun PillButton(
     {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.secondary,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .border(1.dp, MaterialTheme.colorScheme.secondary, RoundedCornerShape(50))
+                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
                 .padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
                 .pointerInteropFilter {
                     var clicked = false

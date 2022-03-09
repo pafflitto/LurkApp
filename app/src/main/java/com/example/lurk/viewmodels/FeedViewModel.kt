@@ -6,6 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.example.lurk.repositories.FeedSource
+import com.example.lurk.screens.feed.Post
 
 class FeedViewModel : ViewModel() {
     var subreddit: String = "popular"
@@ -18,6 +19,9 @@ class FeedViewModel : ViewModel() {
 
     val posts = Pager(PagingConfig(pageSize = 25)) { source }.flow.cachedIn(viewModelScope)
 
+    fun voteStatusUpdated(vote: Post.Companion.Voted) {
+
+    }
 
     companion object {
         enum class SortingType {

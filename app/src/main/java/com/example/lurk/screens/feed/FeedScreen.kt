@@ -1,12 +1,14 @@
 package com.example.lurk.screens.feed
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -26,26 +28,34 @@ import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun FeedScreen(
-    posts: Flow<PagingData<Post>>
+    posts: Flow<PagingData<Post>>,
+    updateVoteStatus: (Post.Companion.Voted) -> Unit
 )
 {
     val lazyPosts = posts.collectAsLazyPagingItems()
     Posts(
-        lazyPosts
+        posts = lazyPosts,
+        updateVoteStatus = updateVoteStatus
     )
 }
 
 @Composable
-fun Posts(posts: LazyPagingItems<Post>) {
+fun Posts(
+    posts: LazyPagingItems<Post>,
+    updateVoteStatus: (Post.Companion.Voted) -> Unit
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(4.dp)
     ) {
         items(posts) { post ->
             if (post != null) {
-                PostView(post = post)
+                PostView(
+                    post = post,
+                    updateVoteStatus = updateVoteStatus
+                )
             }
         }
     }
@@ -53,19 +63,37 @@ fun Posts(posts: LazyPagingItems<Post>) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostView(post: Post)
+fun PostView(
+    post: Post,
+    updateVoteStatus: (Post.Companion.Voted) -> Unit
+)
 {
-    var voted by remember { mutableStateOf(NoVote) }
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp),
+    var voted by remember { mutableStateOf(post.voted) }
+    val clicked by remember { mutableStateOf(post.clicked)}
+
+    LaunchedEffect(voted) {
+        updateVoteStatus(voted)
+    }
+
+    LaunchedEffect(clicked) {
+        // TODO Add in vm function here to update the post
+    }
+    val borderColor by animateColorAsState(
+        when {
+            voted == UpVoted -> MaterialTheme.colorScheme.secondary
+            voted == DownVoted -> MaterialTheme.colorScheme.tertiary
+            clicked -> MaterialTheme.colorScheme.outline
+            else -> MaterialTheme.colorScheme.primary
+        }
+    )
+
+    OutlinedCard(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+        border = BorderStroke(1.4.dp, borderColor),
     ) {
         Column(
             modifier = Modifier.padding(top = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             RedditTitle(
                 post = post,
@@ -79,7 +107,8 @@ fun PostView(post: Post)
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 is ImagePost -> ImagePostView(
-                    post = post
+                    post = post,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 else -> {}// Title and footer only
             }
@@ -88,7 +117,6 @@ fun PostView(post: Post)
                 post = post,
                 voted = voted,
                 upVoteClick = {
-                    // Use vm to update post with server here
                     voted = if (voted == UpVoted) NoVote else UpVoted
                 },
                 downVoteClick = {
@@ -112,7 +140,7 @@ fun FeedScreenPreviewDark()
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 repeat(5)
                 {
-                    PostView(post = Post.exampleTextPost)
+                    PostView(post = Post.exampleTextPost) {}
                 }
             }
         }
@@ -132,7 +160,7 @@ fun FeedScreenPreviewLight()
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 repeat(5)
                 {
-                    PostView(post = Post.exampleTextPost)
+                    PostView(post = Post.exampleTextPost) {}
                 }
             }
         }

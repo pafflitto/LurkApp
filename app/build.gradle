@@ -8,6 +8,14 @@ def apikeyProperties = new Properties()
 apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('/Users/paulafflitto/Dev Fun/KeyStore')
+            storePassword 'Polygon@54Ut'
+            keyAlias 'Key0'
+            keyPassword 'Polygon@54Ut'
+        }
+    }
     compileSdk 31
 
     defaultConfig {
@@ -23,6 +31,7 @@ android {
         }
 
         buildConfigField("String", "CLIENT_ID", apikeyProperties['CLIENT_ID'])
+        signingConfig signingConfigs.release
     }
 
     buildTypes {
@@ -59,7 +68,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material3:material3:1.0.0-alpha05"
+    implementation "androidx.compose.material3:material3:1.0.0-alpha06"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
     implementation 'androidx.activity:activity-compose:1.4.0'

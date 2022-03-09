@@ -11,9 +11,10 @@ open class Post(data: PostData)
     val author: String = data.author
     val subreddit: String = data.subreddit
     val comments: Int = data.numComments
-    val voted: Voted = Voted.UpVoted
+    var voted: Voted = Voted.NoVote
     private val ups: Int = data.ups
     private val downs: Int = data.downs
+    var clicked: Boolean = data.clicked
 
     val votes: String get() {
         val diff = ups - downs

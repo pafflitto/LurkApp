@@ -1,14 +1,15 @@
 package com.example.lurk.screens.feed
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,15 +37,7 @@ fun Footer(
         }
     )
 
-    val dividerAlpha by animateFloatAsState(
-        if (voted == Voted.NoVote) 1f else 0f
-    )
     Column {
-        Divider(
-            color = MaterialTheme.colorScheme.secondary,
-            thickness = 1.dp,
-            modifier = Modifier.alpha(dividerAlpha)
-        )
         Box(
             modifier = modifier
                 .height(IntrinsicSize.Min)

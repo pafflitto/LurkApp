@@ -36,7 +36,10 @@ class MainActivity : ComponentActivity() {
     {
         if (accessGranted)
         {
-            FeedScreen(feedViewModel.posts)
+            FeedScreen(
+                feedViewModel.posts,
+                updateVoteStatus = feedViewModel::voteStatusUpdated
+            )
         }
         else
         {
