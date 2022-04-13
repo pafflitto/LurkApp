@@ -5,12 +5,12 @@ import com.example.lurk.screens.feed.Post.Companion.PostType.IMAGE
 import com.example.lurk.screens.feed.Post.Companion.PostType.TEXT
 import kotlin.math.round
 
-open class Post(data: PostData)
+open class Post(private val data: PostData)
 {
     val title: String = data.title
     val author: String = data.author
     val subreddit: String = data.subreddit
-    val comments: Int = data.numComments
+    private val totalComments: Int = data.numComments
     var voted: Voted = Voted.NoVote
     private val ups: Int = data.ups
     private val downs: Int = data.downs
@@ -23,6 +23,15 @@ open class Post(data: PostData)
         }
         else {
             diff.toString()
+        }
+    }
+
+    val comments: Double get() {
+        return if (totalComments / 1000 != 0) {
+            totalComments / 1000 + (totalComments % 1000) / 1000.0
+        }
+        else {
+            totalComments.toDouble()
         }
     }
     companion object {

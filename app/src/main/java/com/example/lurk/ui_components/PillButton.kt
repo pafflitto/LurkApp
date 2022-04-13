@@ -4,7 +4,7 @@ import android.content.res.Configuration
 import android.view.MotionEvent
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lurk.ui.theme.LurkTheme
@@ -24,7 +25,7 @@ import com.example.lurk.ui.theme.LurkTheme
 @ExperimentalComposeUiApi
 @Composable
 fun PillButton(
-    clickEvent: () -> Unit,
+    onClick: () -> Unit = {},
     text: String
 ) {
 
@@ -47,24 +48,27 @@ fun PillButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontWeight = FontWeight.ExtraBold,
             modifier = Modifier
-                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
-                .padding(start = 8.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
                 .pointerInteropFilter {
-                    var clicked = false
-                    when (it.action) {
+                    currentState = when (it.action) {
                         MotionEvent.ACTION_DOWN -> {
-                            currentState = ButtonState.PRESSED
-                            clicked = true
+                            ButtonState.PRESSED
                         }
+                        MotionEvent.ACTION_MOVE -> currentState
                         MotionEvent.ACTION_UP -> {
-                            currentState = ButtonState.RELEASED
-                            clicked = true
+                            if (currentState == ButtonState.PRESSED) {
+                                onClick
+                            }
+                            ButtonState.RELEASED
                         }
+                        else -> ButtonState.RELEASED
                     }
-                    clicked
+                    true
                 }
+                .background(color = MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
+                .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
         )
     }
 }
@@ -76,7 +80,6 @@ fun PillButtonPreviewLight() {
     LurkTheme(useDarkTheme = false) {
         Surface {
             PillButton(
-                clickEvent = {},
                 text = "Text Button"
             )
         }
@@ -90,7 +93,6 @@ fun PillButtonPreviewDark() {
     LurkTheme(useDarkTheme = true) {
         Surface {
             PillButton(
-                clickEvent = {},
                 text = "Text Button"
             )
         }

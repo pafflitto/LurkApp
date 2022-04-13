@@ -11,13 +11,13 @@ import com.example.lurk.screens.feed.Post
 class FeedViewModel : ViewModel() {
     var subreddit: String = "popular"
         set(newSub) {
-            field = newSub
             source = FeedSource(newSub)
+            field = newSub
         }
 
     private var source = FeedSource(subreddit)
 
-    val posts = Pager(PagingConfig(pageSize = 25)) { source }.flow.cachedIn(viewModelScope)
+    val posts = Pager(PagingConfig(pageSize = 100)) { source }.flow.cachedIn(viewModelScope)
 
     fun voteStatusUpdated(vote: Post.Companion.Voted) {
 

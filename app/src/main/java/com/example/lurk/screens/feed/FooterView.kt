@@ -31,8 +31,8 @@ fun Footer(
 ) {
     val itemColor by animateColorAsState(
         when(voted) {
-            Voted.UpVoted -> MaterialTheme.colorScheme.onSecondary
-            Voted.DownVoted -> MaterialTheme.colorScheme.onTertiary
+            Voted.UpVoted -> MaterialTheme.colorScheme.onSecondaryContainer
+            Voted.DownVoted -> MaterialTheme.colorScheme.onTertiaryContainer
             else -> MaterialTheme.colorScheme.onSurface
         }
     )
@@ -57,7 +57,17 @@ fun Footer(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row {
+                    Row(
+                        modifier = Modifier.height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = if (post.comments >= 0) R.drawable.ic_upvote_selected else R.drawable.ic_downvote_selected),
+                            contentDescription = "Votes icon",
+                            tint = itemColor,
+                            modifier = Modifier.size(12.dp)
+                        )
                         Text(
                             text = post.votes,
                             style = MaterialTheme.typography.labelMedium,
@@ -74,7 +84,7 @@ fun Footer(
                             painter = painterResource(id = R.drawable.ic_comment),
                             contentDescription = "Comment Icon",
                             tint = itemColor,
-                            modifier = Modifier.fillMaxHeight()
+                            modifier = Modifier.size(12.dp)
                         )
                         Text(
                             text = post.comments.toString(),

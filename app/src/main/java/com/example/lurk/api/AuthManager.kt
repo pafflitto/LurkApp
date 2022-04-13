@@ -1,60 +1,48 @@
 package com.example.lurk.api
 
 import com.example.lurk.LurkApplication
-import com.example.lurk.datastores.RedditAuthDataStoreManager
+import com.example.lurk.authDataStore
 import com.example.lurk.repositories.AuthRepo
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import java.util.*
 
-class AuthManager(
-    private val prefManager: RedditAuthDataStoreManager
-    ) {
+@OptIn(DelicateCoroutinesApi::class)
+class AuthManager: CoroutineScope by CoroutineScope(SupervisorJob() + Dispatchers.IO) {
 
     private val repo = AuthRepo()
 
-    suspend fun getAccess(): Boolean {
-        var grantAccess = false
-
-        if (prefManager.getRefreshToken().isNotBlank())
-        {
-            // User previously signed in
-        }
-        else
-        {
-            // Userless
-            val uuid = LurkApplication.instance().prefManager.getUUID()
-
-            repo.requestUserlessToken(uuid).collect {
-                // Save token information to our data store
-                prefManager.saveAccessToken(it.accessToken)
-                prefManager.saveRefreshToken(it.refreshToken)
-                prefManager.saveTokenExpireTime(it.timeTillExpiration)
-                prefManager.saveTokenScope(it.scope)
-
-                grantAccess =  it.accessToken?.isNotBlank() ?: false
-            }
-        }
-
-        return grantAccess
-    }
-
-    val accessTokenValid = flow {
-        val accessToken = prefManager.getAccessToken()
-        val expired = Date().after(prefManager.getTokenExpireTime())
-
+    fun getAccess(bearerToken: String? = null) = launch(Dispatchers.IO) {
         when {
-            accessToken.isNotBlank() && expired -> {
-                emit(getAccess())
+            authDataStore.refreshTokenFlow.value?.isNotBlank() == true -> {
+                // User previously signed in
+                authDataStore.refreshTokenFlow.value?.let { refreshToken ->
+                    repo.refreshToken(refreshToken)
+                }
             }
-            accessToken.isBlank() -> {
-                emit(false)
+            bearerToken?.isNotBlank() == true -> {
+                // User login
+                repo.requestUserToken(bearerToken)
             }
             else -> {
-                emit(true)
+                // Userless
+                val uuid = LurkApplication.instance().authPrefManager.getUUID()
+                repo.requestUserlessToken(uuid)
             }
         }
     }
 
-
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val userHasAccess: StateFlow<Boolean> = combine(authDataStore.accessTokenFlow, authDataStore.refreshTokenFlow, authDataStore.tokenExpireTimeFlow) { accessToken, refreshToken, expireDate ->
+        accessToken?.let {
+            if (Date().after(expireDate)) {
+                // fetch new token with refresh token or get another userless token
+                getAccess()
+                false
+            }
+            else {
+                true
+            }
+        } ?: false
+    }.flowOn(Dispatchers.IO).stateIn(this, SharingStarted.Eagerly, false)
 }

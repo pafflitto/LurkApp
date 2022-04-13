@@ -1,9 +1,6 @@
 package com.example.lurk.screens.feed
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,7 +16,7 @@ import com.example.lurk.ui_components.PillButton
 @Composable
 fun RedditTitle(
     post: Post,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -30,10 +27,15 @@ fun RedditTitle(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(4.dp))
-        PillButton(
-            clickEvent = {},
-            text = "r/${post.subreddit}"
-        )
+        Row {
+            PillButton(
+                text = "r/${post.subreddit}"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            PillButton(
+                text = "u/${post.author}"
+            )
+        }
     }
 }
 

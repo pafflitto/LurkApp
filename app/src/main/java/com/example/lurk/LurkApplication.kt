@@ -11,13 +11,14 @@ import java.util.*
 
 class LurkApplication : Application() {
 
-    val prefManager: RedditAuthDataStoreManager
-    val authManager: AuthManager
+    lateinit var authPrefManager: RedditAuthDataStoreManager
+        private set
+
+    lateinit var authManager: AuthManager
+        private set
 
     init {
         instance = this
-        prefManager = RedditAuthDataStoreManager(this)
-        authManager = AuthManager(prefManager)
     }
 
     companion object {
@@ -34,13 +35,15 @@ class LurkApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        authPrefManager = RedditAuthDataStoreManager(applicationContext)
+        authManager = AuthManager()
 
         CoroutineScope(Dispatchers.IO).launch()
         {
-            val uuid = prefManager.getUUID()
+            val uuid = authPrefManager.getUUID()
             if (uuid.isBlank())
             {
-                prefManager.saveUUID(UUID.randomUUID().toString())
+                authPrefManager.saveUUID(UUID.randomUUID().toString())
             }
         }
     }
