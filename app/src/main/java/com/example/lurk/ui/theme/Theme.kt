@@ -119,7 +119,7 @@ val LocalExtendedColors = staticCompositionLocalOf {
 fun LurkTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     isDynamic: Boolean = false,
-    content: @Composable() () -> Unit
+    content: @Composable () -> Unit
 ) {
     val colors = if (isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val context = LocalContext.current
@@ -145,4 +145,7 @@ object Extended {
 //	val DownvoteColor: ColorRoles
 //		@Composable
 //		get() = LocalExtendedColors.current.colors[1].roles
+	val PostBackgroundColor: Color
+		@Composable
+		get() = if (isSystemInDarkTheme()) Color.Black else Color.White
 }

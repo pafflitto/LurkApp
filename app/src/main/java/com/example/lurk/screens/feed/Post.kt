@@ -9,7 +9,7 @@ open class Post(private val data: PostData)
 {
     val title: String = data.title
     val author: String = data.author
-    val subreddit: String = data.subreddit
+    val subreddit: String = data.subredditNamePrefixed
     private val totalComments: Int = data.numComments
     var voted: Voted = Voted.NoVote
     private val ups: Int = data.ups
@@ -60,7 +60,7 @@ open class Post(private val data: PostData)
         /**
          * Function that creates an instance of a post with respect to its type
          */
-        fun Build(data: PostData): Post {
+        fun build(data: PostData): Post {
             return when(getType(data)) {
                 IMAGE -> ImagePost(data)
                 TEXT -> TextPost(data)

@@ -1,52 +1,66 @@
 package com.example.lurk.screens.feed
 
 import android.content.res.Configuration
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
+import androidx.compose.ui.unit.sp
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import coil.annotation.ExperimentalCoilApi
 import com.example.lurk.screens.feed.Post.Companion.Voted
 import com.example.lurk.screens.feed.Post.Companion.Voted.*
 import com.example.lurk.screens.feed.post_views.ImagePostView
 import com.example.lurk.screens.feed.post_views.TextPostView
+import com.example.lurk.ui.theme.Extended
 import com.example.lurk.ui.theme.LurkTheme
-import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun FeedScreen(
     subreddit: String = "Home",
-    posts: Flow<PagingData<Post>>,
-    updateVoteStatus: (Voted) -> Unit
+    posts: LazyPagingItems<Post>,
+    updateVoteStatus: (Voted) -> Unit,
+    modifier: Modifier = Modifier,
 )
 {
-    val lazyPosts = posts.collectAsLazyPagingItems()
+    val listState = rememberLazyListState()
+    val subredditTextSize by animateFloatAsState(
+        if (listState.firstVisibleItemIndex != 0) {
+            24f
+        }
+        else {
+            MaterialTheme.typography.displaySmall.fontSize.value
+        },
+        animationSpec = tween(300)
+    )
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
     ) {
         Text(
             text = subreddit,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.displaySmall,
+            fontSize = subredditTextSize.sp,
+            fontWeight = FontWeight.ExtraBold,
             modifier = Modifier
-                .padding(vertical = 8.dp)
+                .padding(top = 16.dp, bottom = 8.dp, start = 16.dp),
+            textAlign = TextAlign.Start
         )
         Posts(
-            posts = lazyPosts,
-            updateVoteStatus = updateVoteStatus
+            posts = posts,
+            updateVoteStatus = updateVoteStatus,
+            listState = listState
         )
     }
 }
@@ -54,14 +68,16 @@ fun FeedScreen(
 @Composable
 fun Posts(
     posts: LazyPagingItems<Post>,
-    updateVoteStatus: (Voted) -> Unit
+    updateVoteStatus: (Voted) -> Unit,
+    listState: LazyListState
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(4.dp)
+        contentPadding = PaddingValues(4.dp),
+        state = listState
     ) {
         items(posts) { post ->
             if (post != null) {
@@ -74,7 +90,7 @@ fun Posts(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PostView(
     post: Post,
@@ -91,21 +107,17 @@ fun PostView(
     LaunchedEffect(clicked) {
         // TODO Add in vm function here to update the post
     }
-    val borderColor by animateColorAsState(
-        when {
-            voted == UpVoted -> MaterialTheme.colorScheme.secondary
-            voted == DownVoted -> MaterialTheme.colorScheme.tertiary
-            clicked -> MaterialTheme.colorScheme.outline
-            else -> MaterialTheme.colorScheme.outline
-        }
-    )
 
-    OutlinedCard(
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, borderColor),
-        elevation = CardDefaults.outlinedCardElevation(pressedElevation = 16.dp),
+
+
+    Card(
+        containerColor = Extended.PostBackgroundColor,
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = if (post.clicked) 0.dp else 4.dp,
+            pressedElevation = 0.dp
+        ),
         onClick = {
-            // do nothing yet
+
         }
     ) {
         Column(

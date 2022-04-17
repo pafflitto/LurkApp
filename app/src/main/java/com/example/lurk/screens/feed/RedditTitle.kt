@@ -29,7 +29,7 @@ fun RedditTitle(
         Spacer(modifier = Modifier.height(4.dp))
         Row {
             PillButton(
-                text = "r/${post.subreddit}"
+                text = post.subreddit
             )
             Spacer(modifier = Modifier.width(8.dp))
             PillButton(

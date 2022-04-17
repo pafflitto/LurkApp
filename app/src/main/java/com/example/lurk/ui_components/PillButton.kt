@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInteropFilter
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lurk.ui.theme.LurkTheme
@@ -47,9 +46,8 @@ fun PillButton(
     {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
-            fontWeight = FontWeight.ExtraBold,
             modifier = Modifier
                 .pointerInteropFilter {
                     currentState = when (it.action) {
@@ -59,7 +57,7 @@ fun PillButton(
                         MotionEvent.ACTION_MOVE -> currentState
                         MotionEvent.ACTION_UP -> {
                             if (currentState == ButtonState.PRESSED) {
-                                onClick
+                                onClick()
                             }
                             ButtonState.RELEASED
                         }
@@ -67,7 +65,7 @@ fun PillButton(
                     }
                     true
                 }
-                .background(color = MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
+                .background(color = MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(50))
                 .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
         )
     }

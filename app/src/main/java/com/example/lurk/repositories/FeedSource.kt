@@ -27,7 +27,7 @@ class FeedSource(
         )
 
         val posts = response?.data?.children?.map {
-            Post.Build(it.data)
+            Post.build(it.data)
         } ?: emptyList()
 
         return LoadResult.Page(
