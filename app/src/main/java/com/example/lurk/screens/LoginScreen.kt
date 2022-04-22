@@ -82,7 +82,7 @@ fun LoginScreenContent(
 @Composable
 fun LoginScreenPreviewDark()
 {
-    LurkTheme(useDarkTheme = true) {
+    LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             LoginScreenContent({}, {})
         }
@@ -93,7 +93,7 @@ fun LoginScreenPreviewDark()
 @Composable
 fun LoginScreenPreviewLight()
 {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             LoginScreenContent({}, {})
         }

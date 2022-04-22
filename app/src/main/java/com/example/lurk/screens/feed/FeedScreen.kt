@@ -12,8 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,13 +24,13 @@ import com.example.lurk.screens.feed.post_views.ImagePostView
 import com.example.lurk.screens.feed.post_views.TextPostView
 import com.example.lurk.ui.theme.Extended
 import com.example.lurk.ui.theme.LurkTheme
+import com.example.lurk.ui_components.ContentScreen
 
 @Composable
 fun FeedScreen(
     subreddit: String = "Home",
     posts: LazyPagingItems<Post>,
     updateVoteStatus: (Voted) -> Unit,
-    modifier: Modifier = Modifier,
 )
 {
     val listState = rememberLazyListState()
@@ -45,18 +43,11 @@ fun FeedScreen(
         },
         animationSpec = tween(300)
     )
-    Column(
-        modifier = modifier
+
+    ContentScreen(
+        title = subreddit,
+        titleFontSize = subredditTextSize.sp
     ) {
-        Text(
-            text = subreddit,
-            style = MaterialTheme.typography.displaySmall,
-            fontSize = subredditTextSize.sp,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier
-                .padding(top = 16.dp, bottom = 8.dp, start = 16.dp),
-            textAlign = TextAlign.Start
-        )
         Posts(
             posts = posts,
             updateVoteStatus = updateVoteStatus,
@@ -107,8 +98,6 @@ fun PostView(
     LaunchedEffect(clicked) {
         // TODO Add in vm function here to update the post
     }
-
-
 
     Card(
         containerColor = Extended.PostBackgroundColor,
@@ -161,7 +150,7 @@ fun PostView(
 @Composable
 fun FeedScreenPreviewDark()
 {
-    LurkTheme(useDarkTheme = true) {
+    LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -181,7 +170,7 @@ fun FeedScreenPreviewDark()
 @Composable
 fun FeedScreenPreviewLight()
 {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             Column(
                 modifier = Modifier.fillMaxSize(),

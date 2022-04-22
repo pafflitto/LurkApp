@@ -37,7 +37,7 @@ fun TextPostView(
 @Preview
 @Composable
 fun TextPostPreviewLight() {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             TextPostView(
                 post = Post.exampleTextPost,
@@ -50,7 +50,7 @@ fun TextPostPreviewLight() {
 @Preview
 @Composable
 fun TextPostPreviewDark() {
-    LurkTheme(useDarkTheme = true) {
+    LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             TextPostView(
                 post = Post.exampleTextPost,

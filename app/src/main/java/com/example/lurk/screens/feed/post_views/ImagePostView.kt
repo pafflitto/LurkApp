@@ -52,7 +52,7 @@ fun ImagePostView(
 @Preview
 @Composable
 fun PostContentPreviewDark() {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             ImagePostView(post = Post.exampleImagePost)
         }

@@ -26,7 +26,7 @@ class AuthManager: CoroutineScope by CoroutineScope(SupervisorJob() + Dispatcher
             }
             else -> {
                 // Userless
-                val uuid = LurkApplication.instance().authPrefManager.getUUID()
+                val uuid = LurkApplication.instance().authPrefDataStore.getUUID()
                 repo.requestUserlessToken(uuid)
             }
         }

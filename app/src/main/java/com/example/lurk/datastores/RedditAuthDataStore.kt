@@ -12,7 +12,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
 import java.util.*
 
-class RedditAuthDataStoreManager(private val context: Context) {
+class RedditAuthDataStore(private val context: Context) {
 
     private val Context.authDataStore by preferencesDataStore(name = AUTH_PREFERENCES)
 
@@ -43,7 +43,7 @@ class RedditAuthDataStoreManager(private val context: Context) {
         }
     }
 
-    val accessTokenFlow: StateFlow<String?> = context.authDataStore.data.map {
+    val accessTokenFlow: StateFlow<String?> = context.authDataStore.data.mapLatest {
         Log.e("PrefManager", "Pref Changed: ${it[ACCESS_TOKEN]}")
         it[ACCESS_TOKEN]
     }.flowOn(Dispatchers.IO).stateIn(GlobalScope, SharingStarted.Eagerly, null)

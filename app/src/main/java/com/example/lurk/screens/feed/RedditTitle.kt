@@ -42,7 +42,7 @@ fun RedditTitle(
 @Preview
 @Composable
 fun RedditTitleLightPreview() {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             RedditTitle(
                 post = Post.exampleTextPost,
@@ -55,7 +55,7 @@ fun RedditTitleLightPreview() {
 @Preview
 @Composable
 fun RedditTitleDarkPreview() {
-    LurkTheme(useDarkTheme = true) {
+    LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             RedditTitle(
                 post = Post.exampleTextPost,

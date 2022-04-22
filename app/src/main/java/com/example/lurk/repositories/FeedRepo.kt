@@ -7,7 +7,7 @@ import com.example.lurk.api.ListingClient
 class FeedRepo {
 
     private val authManager = LurkApplication.instance().authManager
-    private val prefManager = LurkApplication.instance().authPrefManager
+    private val prefManager = LurkApplication.instance().authPrefDataStore
     private val listingClient = ListingClient.webservice
 
     suspend fun requestSubreddit(

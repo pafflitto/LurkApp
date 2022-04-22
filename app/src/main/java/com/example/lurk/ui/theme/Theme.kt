@@ -1,14 +1,13 @@
 package com.example.lurk.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import com.example.lurk.userPrefDataStore
+import com.example.lurk.viewmodels.UserTheme
 import com.google.android.material.color.ColorRoles
 import com.google.android.material.color.MaterialColors
 
@@ -117,17 +116,28 @@ val LocalExtendedColors = staticCompositionLocalOf {
 
 @Composable
 fun LurkTheme(
-    useDarkTheme: Boolean = isSystemInDarkTheme(),
-    isDynamic: Boolean = false,
+	useDarkPreviewTheme: Boolean? = null,
     content: @Composable () -> Unit
 ) {
-    val colors = if (isDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val context = LocalContext.current
-        if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    } else {
-        if (useDarkTheme) DarkThemeColors else LightThemeColors
-    }
+	val preferredTheme by userPrefDataStore.userThemeFlow.collectAsState()
 
+	val context = LocalContext.current
+
+	var colors = when (preferredTheme) {
+		UserTheme.Auto -> LightThemeColors // TODO
+		UserTheme.Dark -> DarkThemeColors
+		UserTheme.Light -> LightThemeColors
+		UserTheme.MaterialYou -> {
+			if (isSystemInDarkTheme()) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+		}
+	}
+
+	// For previews only
+	useDarkPreviewTheme?.let {
+		colors = if (it) DarkThemeColors else LightThemeColors
+	}
+
+	val useDarkTheme = colors == DarkThemeColors || colors == dynamicDarkColorScheme(context)
     val extendedColors = setupCustomColors(colors, !useDarkTheme)
     CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
         MaterialTheme(
@@ -147,5 +157,10 @@ object Extended {
 //		get() = LocalExtendedColors.current.colors[1].roles
 	val PostBackgroundColor: Color
 		@Composable
-		get() = if (isSystemInDarkTheme()) Color.Black else Color.White
+		get() = when(userPrefDataStore.userThemeFlow.value) {
+			UserTheme.Dark -> Color.Black
+			UserTheme.Light -> Color.White
+			UserTheme.MaterialYou -> if (isSystemInDarkTheme()) Color.Black else Color.White
+			UserTheme.Auto -> Color.White // TODO
+		}
 }

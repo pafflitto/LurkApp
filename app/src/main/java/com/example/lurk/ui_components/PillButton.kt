@@ -75,7 +75,7 @@ fun PillButton(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun PillButtonPreviewLight() {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             PillButton(
                 text = "Text Button"
@@ -88,7 +88,7 @@ fun PillButtonPreviewLight() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PillButtonPreviewDark() {
-    LurkTheme(useDarkTheme = true) {
+    LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             PillButton(
                 text = "Text Button"

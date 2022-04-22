@@ -119,7 +119,7 @@ fun Footer(
 @Preview
 @Composable
 fun FooterLightPreview() {
-    LurkTheme(useDarkTheme = false) {
+    LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             Footer(
                 post = Post.exampleTextPost,
@@ -135,7 +135,7 @@ fun FooterLightPreview() {
 @Preview
 @Composable
 fun FooterDarkPreview() {
-    LurkTheme(useDarkTheme = true) {
+    LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             Footer(
                 post = Post.exampleTextPost,

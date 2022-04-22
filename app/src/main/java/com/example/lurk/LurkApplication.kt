@@ -3,7 +3,8 @@ package com.example.lurk
 import android.app.Application
 import android.content.Context
 import com.example.lurk.api.AuthManager
-import com.example.lurk.datastores.RedditAuthDataStoreManager
+import com.example.lurk.datastores.RedditAuthDataStore
+import com.example.lurk.datastores.UserPreferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,10 +12,13 @@ import java.util.*
 
 class LurkApplication : Application() {
 
-    lateinit var authPrefManager: RedditAuthDataStoreManager
+    lateinit var authPrefDataStore: RedditAuthDataStore
         private set
 
     lateinit var authManager: AuthManager
+        private set
+
+    lateinit var userPrefDataStore: UserPreferencesDataStore
         private set
 
     init {
@@ -35,15 +39,17 @@ class LurkApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        authPrefManager = RedditAuthDataStoreManager(applicationContext)
+        authPrefDataStore = RedditAuthDataStore(applicationContext)
         authManager = AuthManager()
+
+        userPrefDataStore = UserPreferencesDataStore(applicationContext)
 
         CoroutineScope(Dispatchers.IO).launch()
         {
-            val uuid = authPrefManager.getUUID()
+            val uuid = authPrefDataStore.getUUID()
             if (uuid.isBlank())
             {
-                authPrefManager.saveUUID(UUID.randomUUID().toString())
+                authPrefDataStore.saveUUID(UUID.randomUUID().toString())
             }
         }
     }
