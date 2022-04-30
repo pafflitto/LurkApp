@@ -74,9 +74,22 @@
         <entry key="../../../../layout/compose-model-1649802584362.xml" value="0.22777777777777777" />
         <entry key="../../../../layout/compose-model-1650001386536.xml" value="0.11517558528428094" />
         <entry key="../../../../layout/compose-model-1650123074799.xml" value="0.11580267558528429" />
+        <entry key="../../../../layout/compose-model-1650598453501.xml" value="0.1" />
+        <entry key="../../../../layout/compose-model-1650598604989.xml" value="0.1" />
+        <entry key="../../../../layout/compose-model-1650598609242.xml" value="0.1" />
+        <entry key="../../../../layout/compose-model-1651184496310.xml" value="0.5745257452574526" />
+        <entry key="../../../../layout/compose-model-1651186081275.xml" value="0.5745257452574526" />
+        <entry key="app/src/main/res/drawable/ic-home-filled.xml" value="0.1175" />
+        <entry key="app/src/main/res/drawable/ic-home-outline.xml" value="0.1175" />
+        <entry key="app/src/main/res/drawable/ic-settings-filled.xml" value="0.1175" />
+        <entry key="app/src/main/res/drawable/ic-settings-outline.xml" value="0.1175" />
+        <entry key="app/src/main/res/drawable/ic-subreddits-filled.xml" value="0.1175" />
+        <entry key="app/src/main/res/drawable/ic-subreddits-outline.xml" value="0.1175" />
         <entry key="app/src/main/res/drawable/ic_comment.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_downvote.xml" value="0.278125" />
         <entry key="app/src/main/res/drawable/ic_downvote_selected.xml" value="0.278125" />
+        <entry key="app/src/main/res/drawable/ic_person_filled.xml" value="0.212" />
+        <entry key="app/src/main/res/drawable/ic_person_outline.xml" value="0.1175" />
         <entry key="app/src/main/res/drawable/ic_upvote.xml" value="0.278125" />
         <entry key="app/src/main/res/drawable/ic_upvote_selected.xml" value="0.278125" />
       </map>

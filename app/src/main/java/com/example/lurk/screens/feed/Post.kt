@@ -1,6 +1,7 @@
 package com.example.lurk.screens.feed
 
 import PostData
+import com.example.lurk.format
 import com.example.lurk.screens.feed.Post.Companion.PostType.IMAGE
 import com.example.lurk.screens.feed.Post.Companion.PostType.TEXT
 import kotlin.math.round
@@ -10,7 +11,7 @@ open class Post(private val data: PostData)
     val title: String = data.title
     val author: String = data.author
     val subreddit: String = data.subredditNamePrefixed
-    private val totalComments: Int = data.numComments
+    val totalComments: Int = data.numComments
     var voted: Voted = Voted.NoVote
     private val ups: Int = data.ups
     private val downs: Int = data.downs
@@ -26,12 +27,12 @@ open class Post(private val data: PostData)
         }
     }
 
-    val comments: Double get() {
+    val commentsString: String get() {
         return if (totalComments / 1000 != 0) {
-            totalComments / 1000 + (totalComments % 1000) / 1000.0
+            (totalComments / 1000 + (totalComments % 1000) / 1000.0).format(1) + "k"
         }
         else {
-            totalComments.toDouble()
+            totalComments.toString()
         }
     }
     companion object {

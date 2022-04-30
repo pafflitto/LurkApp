@@ -63,7 +63,7 @@ fun Footer(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = if (post.comments >= 0) R.drawable.ic_upvote_selected else R.drawable.ic_downvote_selected),
+                            painter = painterResource(id = if (post.totalComments >= 0) R.drawable.ic_upvote_selected else R.drawable.ic_downvote_selected),
                             contentDescription = "Votes icon",
                             tint = itemColor,
                             modifier = Modifier.size(12.dp)
@@ -87,7 +87,7 @@ fun Footer(
                             modifier = Modifier.size(12.dp)
                         )
                         Text(
-                            text = post.comments.toString(),
+                            text = post.commentsString,
                             style = MaterialTheme.typography.labelMedium,
                             color = itemColor,
                             fontWeight = FontWeight.ExtraBold

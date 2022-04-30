@@ -74,9 +74,6 @@ class MainActivity : ComponentActivity() {
                                     updateVoteStatus = feedViewModel::voteStatusUpdated,
                                 )
                             }
-                            composable(Search.route) {
-                                Text("TODO HELLO THERE")
-                            }
                             composable(Account.route) {
                                 Text("TODO FIX ME FIX ME PLS")
                             }
@@ -115,7 +112,7 @@ class MainActivity : ComponentActivity() {
         // Empty screen for now
         val userHasAccess by authManager.userHasAccess.collectAsState()
         LaunchedEffect(userHasAccess) {
-            navController.navigate(if (userHasAccess) Settings.label else Screen.Login.name)
+            navController.navigate(if (userHasAccess) Home.route else Screen.Login.name)
         }
     }
 }

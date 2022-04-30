@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.lurk.screens.feed.Post.Companion.Voted.*
 import com.example.lurk.ui.theme.LurkTheme
@@ -22,7 +23,7 @@ fun AnimatedVoteBackground(
     voteState: Post.Voted = NoVote,
 ) {
     Box(
-        modifier = modifier
+        modifier = modifier.clipToBounds()
     ) {
         AnimatedVisibility(
             visible = voteState == UpVoted,

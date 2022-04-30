@@ -100,14 +100,14 @@ fun PostView(
     }
 
     Card(
-        containerColor = Extended.PostBackgroundColor,
+        colors = CardDefaults.cardColors(
+            containerColor = Extended.PostBackgroundColor
+        ),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = if (post.clicked) 0.dp else 4.dp,
             pressedElevation = 0.dp
         ),
-        onClick = {
-
-        }
+        onClick = {}
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),

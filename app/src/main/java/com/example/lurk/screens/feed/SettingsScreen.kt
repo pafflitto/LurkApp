@@ -1,16 +1,28 @@
 package com.example.lurk.screens.feed
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.rounded.FormatPaint
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.lurk.ui_components.ContentScreen
 import com.example.lurk.viewmodels.UserTheme
@@ -21,17 +33,27 @@ fun SettingsScreen(
     themeSelected: (UserTheme) -> Unit
 ) {
     // Theme Settings
-    var openThemeDropDown by remember { mutableStateOf(false)}
     ContentScreen(title = "Settings") {
+        var showingOptions by remember { mutableStateOf(false) }
         SettingsRow(
             label = "Theme",
-            onClick = { openThemeDropDown = true }
-        ) {
-            ThemeDropDown(
-                openThemeDropDown = openThemeDropDown,
-                closeDropdown = { openThemeDropDown = false},
-                themeSelected = themeSelected
-            )
+            value = currentTheme.displayText,
+            icon = Icons.Rounded.FormatPaint,
+            showingOptions = showingOptions,
+            showOptions = { showOptions ->
+                showingOptions = showOptions
+            }
+            ) { lazyListScope ->
+            lazyListScope.itemsIndexed(UserTheme.values()) { index, item ->
+                SettingsOptionItem(
+                    icon = item.icon,
+                    option = item.displayText,
+                    optionSelected = {
+                        themeSelected(item)
+                        showingOptions = false
+                    }
+                )
+            }
         }
     }
 }
@@ -39,50 +61,119 @@ fun SettingsScreen(
 @Composable
 private fun SettingsRow(
     label: String,
-    onClick: () -> Unit,
-    Value: @Composable () -> Unit
+    value: String,
+    icon: ImageVector,
+    showingOptions: Boolean,
+    showOptions: (showOptions: Boolean) -> Unit,
+    optionView: (LazyListScope) -> Unit
 ) {
     Row(
         modifier = Modifier
             .clickable(
-                onClick = onClick
+                onClick = {
+                    showOptions(true)
+                },
+                enabled = !showingOptions
             )
-            .padding(16.dp)
-            .fillMaxWidth()
+            .height(SettingsScreenConstants.rowHeight)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f)
-        )
-        Value()
+        Icon(imageVector = icon , contentDescription = "Settings Icon", modifier = Modifier.padding(start = 16.dp))
+
+        Box {
+            val alpha by animateFloatAsState(if (showingOptions) 0f else 1f)
+            Row(
+                Modifier.alpha(alpha).padding(end = 16.dp).align(Alignment.Center),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = value,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            androidx.compose.animation.AnimatedVisibility(
+                visible = showingOptions,
+                enter = slideInHorizontally(
+                    initialOffsetX = {
+                        it
+                    },
+                ),
+                exit = slideOutHorizontally(
+                    targetOffsetX = { it }
+                )
+            ) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box {
+                        LazyRow(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(end = 32.dp)
+                        ) {
+                            optionView(this)
+                        }
+                        Box(
+                            Modifier
+                                .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                .align(Alignment.CenterEnd)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Cancel,
+                                contentDescription = "Close options",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier
+                                    .clickable(
+                                        onClick = { showOptions(false) },
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }
+                                    )
+                                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                    .fillMaxHeight()
+                                    .padding(end = 16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun ThemeDropDown(
-    openThemeDropDown: Boolean,
-    closeDropdown: () -> Unit,
-    themeSelected: (UserTheme) -> Unit
+fun SettingsOptionItem(
+    icon: ImageVector,
+    option: String,
+    optionSelected: () -> Unit
 ) {
-    DropdownMenu(
-        expanded = openThemeDropDown,
-        onDismissRequest = closeDropdown
-    ) {
-        Column {
-            UserTheme.values().forEach {
-                DropdownMenuItem(
-                    text = {
-                        Text(it.displayText)
-                    },
-                    leadingIcon = {
-                        Icon(imageVector = it.icon, contentDescription = "${it.displayText} icon")
-                    },
-                    onClick = {
-                        themeSelected(it)
-                        closeDropdown()
-                    }
-                )
+    Row(
+        modifier = Modifier
+            .clickable {
+                optionSelected()
             }
-        }
+            .height(SettingsScreenConstants.rowHeight)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = "Settings Option Icon"
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(option)
     }
+}
+
+object SettingsScreenConstants {
+    val rowHeight = 72.dp
 }

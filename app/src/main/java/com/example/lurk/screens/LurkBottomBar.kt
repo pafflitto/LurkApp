@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -22,17 +23,19 @@ fun LurkBottomBar(
         tonalElevation = 0.dp
     ) {
         NavBarItem.values().forEachIndexed { index, item ->
+            val selected = currentRoute == item.route
             NavigationBarItem(
                 alwaysShowLabel = false,
                 icon = {
                     Icon(
-                        imageVector = item.icon,
+                        painter = painterResource(id = if (selected) item.selectedIcon else item.defaultIcon),
                         contentDescription = item.label + "icon"
                     )
                 },
                 label = { Text(item.label) },
-                selected = currentRoute == item.route,
+                selected = selected,
                 onClick = {
+                    navController.backQueue.clear()
                     navController.navigate(item.route)
                 },
                 colors = NavigationBarItemDefaults.colors(

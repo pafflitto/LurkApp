@@ -1,15 +1,9 @@
 package com.example.lurk.ui_components
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AccountCircle
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.lurk.R
 
-enum class NavBarItem(val label: String, val icon: ImageVector, val route: String) {
-    Home("Home", Icons.Rounded.Home, "home"),
-    Search("Search", Icons.Rounded.Search, "search"),
-    Account("Account", Icons.Rounded.AccountCircle, "account"),
-    Settings("Settings", Icons.Rounded.Settings, "settings")
+enum class NavBarItem(val label: String, val selectedIcon: Int, val defaultIcon: Int, val route: String) {
+    Home(label = "Home", selectedIcon = R.drawable.ic_home_filled ,defaultIcon = R.drawable.ic_home_outline, route = "home"),
+    Account(label = "Account", selectedIcon = R.drawable.ic_person_filled, defaultIcon = R.drawable.ic_person_outline, route = "account"),
+    Settings(label = "Settings", selectedIcon = R.drawable.ic_settings_filled, defaultIcon = R.drawable.ic_settings_outline, route = "settings")
 }
