@@ -6,36 +6,41 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.lurk.api.RedditApiConstants
 import com.example.lurk.screens.LoginScreen
 import com.example.lurk.screens.LurkBottomBar
 import com.example.lurk.screens.Screen
+import com.example.lurk.screens.SubredditSelectionScreen
 import com.example.lurk.screens.feed.FeedScreen
 import com.example.lurk.screens.feed.SettingsScreen
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui_components.NavBarItem.*
-import com.example.lurk.viewmodels.FeedViewModel
-import com.example.lurk.viewmodels.MainViewModel
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: MainViewModel by viewModels()
-    private val feedViewModel: FeedViewModel by viewModels()
+    private val viewModel: LurkViewModel by viewModels()
     private val authManager = LurkApplication.instance().authManager
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -43,21 +48,60 @@ class MainActivity : ComponentActivity() {
         setContent {
             val controller = rememberSystemUiController()
             LurkTheme {
-                val navController = rememberNavController()
+                val navController = rememberAnimatedNavController()
+                val scope = rememberCoroutineScope()
                 // A surface container using the 'background' color from the theme
                 controller.setStatusBarColor(MaterialTheme.colorScheme.surface)
                 controller.setNavigationBarColor(MaterialTheme.colorScheme.surface)
+                val scaffoldState = rememberScaffoldState()
+
+                // access listener
+                val userHasAccess by authManager.userHasAccess.collectAsState()
                 Scaffold(
+                    scaffoldState = scaffoldState,
                     bottomBar = {
-                        LurkBottomBar(navController = navController)
+                        AnimatedVisibility(
+                            visible = userHasAccess,
+                            enter = slideInVertically(initialOffsetY = { it / 2 })
+                        ) {
+                            LurkBottomBar(navController = navController)
+                        }
+                    },
+                    drawerShape = RoundedCornerShape(topStart = 0.dp, topEnd = 12.dp, bottomStart = 0.dp, bottomEnd = 12.dp),
+                    drawerContent = {
+                        val subreddits by viewModel.oUserSubreddits.collectAsState()
+                        SubredditSelectionScreen(
+                            subreddits = subreddits,
+                            subredditSearchText = viewModel.subredditSearchText,
+                            subredditSearchTextChange = viewModel::subredditSearchTextChange,
+                            subredditSearchResults = viewModel.subredditSearchResults,
+                            subredditFavoriteToggle = viewModel::toggleFavoriteSubreddit,
+                            subredditSelected = { subreddit ->
+                                scope.launch {
+                                    scaffoldState.drawerState.close()
+                                }
+                                viewModel.subredditSelected(subreddit)
+                            }
+                        )
                     }
                 ) {
-                    Surface {
-                        NavHost(navController, startDestination = Screen.Splash.name) {
-                            composable(Screen.Splash.name) {
-                                SplashScreen(navController = navController)
+                    Surface(modifier = Modifier.padding(it)) {
+                        AnimatedNavHost(navController, startDestination = Screen.Splash.name) {
+                            composable(
+                                route = Screen.Splash.name,
+                                enterTransition = { fadeIn() },
+                                exitTransition = { fadeOut() }
+                            ) {
+                                SplashScreen(
+                                    navController = navController,
+                                    userHasAccess = userHasAccess
+                                )
                             }
-                            composable(Screen.Login.name) {
+                            composable(
+                                Screen.Login.name,
+                                enterTransition = pageEnterTransition(),
+                                exitTransition = pageExitTransition()
+                            ) {
                                 LoginScreen(
                                     navController = navController,
                                     userlessLogin = viewModel::userlessLogin,
@@ -67,22 +111,35 @@ class MainActivity : ComponentActivity() {
                                     },
                                 )
                             }
-                            composable(Home.route) {
-                                val posts = feedViewModel.posts.collectAsLazyPagingItems()
+                            composable(
+                                route = Home.route,
+                                enterTransition = pageEnterTransition(),
+                                exitTransition = pageExitTransition()
+                            ) {
+                                val feed by viewModel.oFeed.collectAsState()
                                 FeedScreen(
-                                    posts = posts,
-                                    updateVoteStatus = feedViewModel::voteStatusUpdated,
+                                    feed = feed,
+                                    loadingState = viewModel.feedLoadingState,
+                                    updateVoteStatus = viewModel::voteStatusUpdated,
                                 )
                             }
-                            composable(Account.route) {
+                            composable(
+                                route = Account.route,
+                                enterTransition = pageEnterTransition(),
+                                exitTransition = pageExitTransition()
+                            ) {
                                 Text("TODO FIX ME FIX ME PLS")
                             }
-                            composable(Settings.route) {
+                            composable(
+                                Settings.route,
+                                enterTransition = pageEnterTransition(),
+                                exitTransition = pageExitTransition()
+                            ) {
                                 val currentTheme by userPrefDataStore.userThemeFlow.collectAsState()
                                 SettingsScreen(
                                     currentTheme = currentTheme,
-                                    themeSelected = {
-                                        viewModel.setUserTheme(it)
+                                    themeSelected = { selectedTheme ->
+                                        viewModel.setUserTheme(selectedTheme)
                                     }
                                 )
                             }
@@ -108,11 +165,25 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun SplashScreen(navController: NavController) {
+    fun SplashScreen(
+        navController: NavController,
+        userHasAccess: Boolean,
+    ) {
         // Empty screen for now
-        val userHasAccess by authManager.userHasAccess.collectAsState()
         LaunchedEffect(userHasAccess) {
             navController.navigate(if (userHasAccess) Home.route else Screen.Login.name)
         }
+    }
+
+    private fun pageEnterTransition(): (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+        scaleIn(initialScale = 0.75f) +
+        slideInVertically(initialOffsetY = { (it * 0.9f).toInt() }) +
+        fadeIn(animationSpec = tween(500))
+    }
+
+    private fun pageExitTransition(): (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+        scaleOut(targetScale = 0.75f) +
+        slideOutVertically(targetOffsetY = { it }) +
+        fadeOut(animationSpec = tween(200))
     }
 }

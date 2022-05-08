@@ -6,7 +6,7 @@ import com.example.lurk.api.responses.AuthResponse
 import com.example.lurk.authDataStore
 import com.example.lurk.retrofit_clients.AuthClient
 
-class AuthRepo {
+class RedditAuthRepo {
     private val authClient = AuthClient.webservice
     private val decodedHeader = "${BuildConfig.CLIENT_ID}:"
     private val header = hashMapOf("Authorization" to "Basic ".plus(Base64.encodeToString(decodedHeader.toByteArray(), Base64.NO_WRAP)))
@@ -23,7 +23,7 @@ class AuthRepo {
             )
         }
 
-        authDataStore.saveAuthResponse(response)
+        authDataStore.saveAuthResponse(response = response, userlessLogin = true)
     }
 
     suspend fun requestUserToken(code: String) {
@@ -39,7 +39,7 @@ class AuthRepo {
             )
         }
 
-        authDataStore.saveAuthResponse(response)
+        authDataStore.saveAuthResponse(response = response, userlessLogin = false)
     }
 
     suspend fun refreshToken(refreshToken: String) {
@@ -54,6 +54,6 @@ class AuthRepo {
             )
         }
 
-        authDataStore.saveAuthResponse(response)
+        authDataStore.saveAuthResponse(response = response)
     }
 }

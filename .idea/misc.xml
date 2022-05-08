@@ -88,6 +88,8 @@
         <entry key="app/src/main/res/drawable/ic_comment.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_downvote.xml" value="0.278125" />
         <entry key="app/src/main/res/drawable/ic_downvote_selected.xml" value="0.278125" />
+        <entry key="app/src/main/res/drawable/ic_favorite_filled.xml" value="0.212" />
+        <entry key="app/src/main/res/drawable/ic_favorite_outline.xml" value="0.1175" />
         <entry key="app/src/main/res/drawable/ic_person_filled.xml" value="0.212" />
         <entry key="app/src/main/res/drawable/ic_person_outline.xml" value="0.1175" />
         <entry key="app/src/main/res/drawable/ic_upvote.xml" value="0.278125" />

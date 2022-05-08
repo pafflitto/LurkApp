@@ -5,9 +5,9 @@ import androidx.paging.PagingState
 import com.example.lurk.screens.feed.Post
 
 class FeedSource(
-    val subreddit: String
+    val subreddit: String,
+    val repo: RedditRepo,
 ) : PagingSource<String, Post>() {
-    private val repo = FeedRepo()
 
     override fun getRefreshKey(state: PagingState<String, Post>): String? {
         return state.anchorPosition?.let { anchorPosition ->

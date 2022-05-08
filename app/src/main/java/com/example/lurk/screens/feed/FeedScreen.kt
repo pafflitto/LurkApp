@@ -1,35 +1,41 @@
 package com.example.lurk.screens.feed
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
-import coil.annotation.ExperimentalCoilApi
+import com.example.lurk.Feed
+import com.example.lurk.LoadingState
 import com.example.lurk.screens.feed.Post.Companion.Voted
 import com.example.lurk.screens.feed.Post.Companion.Voted.*
 import com.example.lurk.screens.feed.post_views.ImagePostView
 import com.example.lurk.screens.feed.post_views.TextPostView
 import com.example.lurk.ui.theme.Extended
 import com.example.lurk.ui.theme.LurkTheme
-import com.example.lurk.ui_components.ContentScreen
+import com.example.lurk.ui_components.MainPageScreen
 
 @Composable
 fun FeedScreen(
-    subreddit: String = "Home",
-    posts: LazyPagingItems<Post>,
+    feed: Feed?,
+    loadingState: LoadingState,
     updateVoteStatus: (Voted) -> Unit,
 )
 {
@@ -44,46 +50,65 @@ fun FeedScreen(
         animationSpec = tween(300)
     )
 
-    ContentScreen(
-        title = subreddit,
-        titleFontSize = subredditTextSize.sp
-    ) {
-        Posts(
-            posts = posts,
-            updateVoteStatus = updateVoteStatus,
-            listState = listState
-        )
-    }
-}
-
-@Composable
-fun Posts(
-    posts: LazyPagingItems<Post>,
-    updateVoteStatus: (Voted) -> Unit,
-    listState: LazyListState
-) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(4.dp),
-        state = listState
-    ) {
-        items(posts) { post ->
-            if (post != null) {
-                PostView(
-                    post = post,
-                    updateVoteStatus = updateVoteStatus
+    if (feed != null) {
+        val posts = feed.postFlow.collectAsLazyPagingItems()
+        MainPageScreen(
+            title = feed.subreddit,
+            titleFontSize = subredditTextSize.sp
+        ) {
+            if (loadingState == LoadingState.LOADED) {
+                Posts(
+                    posts = posts,
+                    updateVoteStatus = updateVoteStatus,
+                    listState = listState
                 )
+            }
+            else {
+                Box(Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.Center))
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PostView(
+private fun Posts(
+    posts: LazyPagingItems<Post>,
+    updateVoteStatus: (Voted) -> Unit,
+    listState: LazyListState
+) {
+
+    AnimatedVisibility(
+        visible = posts.itemCount > 0,
+        enter = slideInVertically(
+            initialOffsetY = { it / 2},
+            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+        ),
+        exit = fadeOut()
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(4.dp),
+            state = listState
+        ) {
+            items(posts) { post ->
+                if (post != null) {
+                    PostView(
+                        post = post,
+                        updateVoteStatus = updateVoteStatus
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PostView(
     post: Post,
     updateVoteStatus: (Voted) -> Unit
 )
@@ -144,8 +169,6 @@ fun PostView(
     }
 }
 
-@ExperimentalComposeUiApi
-@ExperimentalCoilApi
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun FeedScreenPreviewDark()
@@ -164,8 +187,6 @@ fun FeedScreenPreviewDark()
     }
 }
 
-@ExperimentalComposeUiApi
-@ExperimentalCoilApi
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
 fun FeedScreenPreviewLight()

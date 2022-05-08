@@ -6,8 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import com.example.lurk.UserTheme
 import com.example.lurk.userPrefDataStore
-import com.example.lurk.viewmodels.UserTheme
 import com.google.android.material.color.ColorRoles
 import com.google.android.material.color.MaterialColors
 

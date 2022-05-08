@@ -1,6 +1,7 @@
 package com.example.lurk.ui_components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -12,15 +13,15 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ContentScreen(
+fun MainPageScreen(
     title: String,
     titleFontSize: TextUnit = MaterialTheme.typography.displaySmall.fontSize,
     content: @Composable () -> Unit
 ) {
-    Column {
+    Column(Modifier.fillMaxSize()) {
         Text(
             text = title,
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.displayMedium,
             fontSize = titleFontSize,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier

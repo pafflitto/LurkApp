@@ -24,8 +24,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.lurk.ui_components.ContentScreen
-import com.example.lurk.viewmodels.UserTheme
+import com.example.lurk.UserTheme
+import com.example.lurk.ui_components.MainPageScreen
 
 @Composable
 fun SettingsScreen(
@@ -33,7 +33,7 @@ fun SettingsScreen(
     themeSelected: (UserTheme) -> Unit
 ) {
     // Theme Settings
-    ContentScreen(title = "Settings") {
+    MainPageScreen(title = "Settings") {
         var showingOptions by remember { mutableStateOf(false) }
         SettingsRow(
             label = "Theme",

@@ -1,7 +1,7 @@
 package com.example.lurk.datastores
 
 import android.content.Context
-import android.util.Log
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -15,6 +15,7 @@ import java.util.*
 class RedditAuthDataStore(private val context: Context) {
 
     private val Context.authDataStore by preferencesDataStore(name = AUTH_PREFERENCES)
+    private val coroutineScope = GlobalScope
 
     companion object {
         private const val AUTH_PREFERENCES = "auth_preferences"
@@ -24,12 +25,16 @@ class RedditAuthDataStore(private val context: Context) {
         val REFRESH_TOKEN = stringPreferencesKey("REFRESH_TOKEN")
         val TOKEN_SCOPE = stringPreferencesKey("SCOPE_TOKEN")
         val TOKEN_EXPIRE_TIME = longPreferencesKey("TOKEN_EXPIRE_TIME")
+
+        val USER_SIGNED_IN = booleanPreferencesKey("USER_SIGNED_IN")
     }
 
-    suspend fun saveAuthResponse(response: AuthResponse) {
+    suspend fun saveAuthResponse(response: AuthResponse, userlessLogin: Boolean = oUserSignedIn.value) {
         context.authDataStore.edit {
             response.accessToken?.let { accessToken ->
                 it[ACCESS_TOKEN] = accessToken
+                
+                it[USER_SIGNED_IN] = !userlessLogin
             }
             response.refreshToken?.let { refreshToken ->
                 it[REFRESH_TOKEN] = refreshToken
@@ -43,19 +48,22 @@ class RedditAuthDataStore(private val context: Context) {
         }
     }
 
-    val accessTokenFlow: StateFlow<String?> = context.authDataStore.data.mapLatest {
-        Log.e("PrefManager", "Pref Changed: ${it[ACCESS_TOKEN]}")
+    val oAccessToken: StateFlow<String?> = context.authDataStore.data.mapLatest {
         it[ACCESS_TOKEN]
-    }.flowOn(Dispatchers.IO).stateIn(GlobalScope, SharingStarted.Eagerly, null)
+    }.flowOn(Dispatchers.IO).stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    val refreshTokenFlow: StateFlow<String?> = context.authDataStore.data.mapLatest {
+    val oRefreshToken: StateFlow<String?> = context.authDataStore.data.mapLatest {
         it[REFRESH_TOKEN]
-    }.flowOn(Dispatchers.IO).stateIn(GlobalScope, SharingStarted.Eagerly, null)
+    }.flowOn(Dispatchers.IO).stateIn(coroutineScope, SharingStarted.Eagerly, null)
 
-    val tokenExpireTimeFlow: StateFlow<Date> = context.authDataStore.data.mapLatest {
+    val oTokenExpireTime: StateFlow<Date> = context.authDataStore.data.mapLatest {
         val timeMilli = it[TOKEN_EXPIRE_TIME]?.toLong() ?: 0
         Date(timeMilli)
-    }.flowOn(Dispatchers.IO).stateIn(GlobalScope, SharingStarted.Eagerly, Date())
+    }.flowOn(Dispatchers.IO).stateIn(coroutineScope, SharingStarted.Eagerly, Date())
+
+    val oUserSignedIn: StateFlow<Boolean> = context.authDataStore.data.mapLatest {
+        it[USER_SIGNED_IN] ?: false
+    }.flowOn(Dispatchers.IO).stateIn(coroutineScope, SharingStarted.Eagerly, false)
 
     suspend fun saveUUID(uuid: String) {
         context.authDataStore.edit {

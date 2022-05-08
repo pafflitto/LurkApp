@@ -48,6 +48,19 @@ android {
         jvmTarget = '1.8'
         useIR = true
     }
+    allprojects {
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+            kotlinOptions {
+                freeCompilerArgs += [
+                    "-Xuse-experimental=androidx.compose.animation.ExperimentalAnimationApi",
+                    "-Xuse-experimental=androidx.compose.material3.ExperimentalMaterial3Api",
+                    "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                    "-Xuse-experimental=androidx.compose.foundation.ExperimentalFoundationApi",
+                    "-Xuse-experimental=androidx.compose.ui.ExperimentalComposeUiApi"
+                ]
+            }
+        }
+    }
     buildFeatures {
         compose true
     }
@@ -89,4 +102,5 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.24.6-alpha"
     implementation "androidx.navigation:navigation-compose:2.4.2"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.24.6-alpha")
 }

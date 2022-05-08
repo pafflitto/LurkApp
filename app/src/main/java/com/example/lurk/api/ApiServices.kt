@@ -1,6 +1,7 @@
 package com.example.lurk.api
 
 import ListingResponse
+import com.example.lurk.api.responses.SubredditSearchResponse
 import com.example.lurk.api.responses.UserRefreshTokenResponse
 import com.example.lurk.api.responses.UserTokenResponse
 import com.example.lurk.api.responses.UserlessTokenResponse
@@ -40,4 +41,22 @@ interface ListingApiService {
         @Query("before") before: String?,
         @Query("count") count: Int = 100
     ): ListingResponse
+
+    @GET("subreddits/mine/subscriber")
+    suspend fun userSubreddits(
+        @HeaderMap headerMap: HashMap<String, String>,
+    ): ListingResponse
+
+    @GET("subreddits/default")
+    suspend fun userlessSubreddits(
+        @HeaderMap headerMap: HashMap<String, String>
+    ): ListingResponse
+
+    @GET("api/subreddit_autocomplete")
+    suspend fun subredditSearch(
+        @HeaderMap headerMap: HashMap<String, String>,
+        @Query("query") searchQuery: String,
+        @Query("include_over_18") includeNSFW: Boolean = false,
+        @Query("include_profiles") includeProfiles: Boolean = false
+    ): SubredditSearchResponse
 }

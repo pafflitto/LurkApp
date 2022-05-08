@@ -2,21 +2,23 @@ package com.example.lurk.api
 
 import com.example.lurk.LurkApplication
 import com.example.lurk.authDataStore
-import com.example.lurk.repositories.AuthRepo
-import kotlinx.coroutines.*
+import com.example.lurk.repositories.RedditAuthRepo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.util.*
 
-@OptIn(DelicateCoroutinesApi::class)
 class AuthManager: CoroutineScope by CoroutineScope(SupervisorJob() + Dispatchers.IO) {
 
-    private val repo = AuthRepo()
+    private val repo = RedditAuthRepo()
 
     fun getAccess(bearerToken: String? = null) = launch(Dispatchers.IO) {
         when {
-            authDataStore.refreshTokenFlow.value?.isNotBlank() == true -> {
+            authDataStore.oRefreshToken.value?.isNotBlank() == true -> {
                 // User previously signed in
-                authDataStore.refreshTokenFlow.value?.let { refreshToken ->
+                authDataStore.oRefreshToken.value?.let { refreshToken ->
                     repo.refreshToken(refreshToken)
                 }
             }
@@ -32,8 +34,7 @@ class AuthManager: CoroutineScope by CoroutineScope(SupervisorJob() + Dispatcher
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val userHasAccess: StateFlow<Boolean> = combine(authDataStore.accessTokenFlow, authDataStore.refreshTokenFlow, authDataStore.tokenExpireTimeFlow) { accessToken, refreshToken, expireDate ->
+    val userHasAccess: StateFlow<Boolean> = combine(authDataStore.oAccessToken, authDataStore.oRefreshToken, authDataStore.oTokenExpireTime) { accessToken, refreshToken, expireDate ->
         accessToken?.let {
             if (Date().after(expireDate)) {
                 // fetch new token with refresh token or get another userless token
