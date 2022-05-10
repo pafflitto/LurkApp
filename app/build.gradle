@@ -56,7 +56,8 @@ android {
                     "-Xuse-experimental=androidx.compose.material3.ExperimentalMaterial3Api",
                     "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
                     "-Xuse-experimental=androidx.compose.foundation.ExperimentalFoundationApi",
-                    "-Xuse-experimental=androidx.compose.ui.ExperimentalComposeUiApi"
+                    "-Xuse-experimental=androidx.compose.ui.ExperimentalComposeUiApi",
+                    "-Xuse-experimental=coil.annotation.ExperimentalCoilApi"
                 ]
             }
         }

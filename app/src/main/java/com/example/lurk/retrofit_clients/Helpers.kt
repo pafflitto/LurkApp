@@ -7,6 +7,10 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 import retrofit2.HttpException
 
+/**
+ * Function that wraps the response of an api request with a Kotlin Result. This is used to
+ * handle HTTP errors received from the reddit api
+ */
 suspend fun <T: Any> handleRequest(requestFunc: suspend () -> T): Result<T> {
     return try {
         Result.success(requestFunc())
@@ -15,6 +19,9 @@ suspend fun <T: Any> handleRequest(requestFunc: suspend () -> T): Result<T> {
     }
 }
 
+/**
+ * Debugging Retrofit Client Interceptor to see raw json response from the Reddit api
+ */
 class DebugInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request: Request = chain.request()

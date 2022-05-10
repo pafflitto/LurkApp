@@ -4,6 +4,9 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.lurk.screens.feed.Post
 
+/**
+ * Class that holds the PagingSource for the feed page
+ */
 class FeedSource(
     val subreddit: String,
     val repo: RedditRepo,

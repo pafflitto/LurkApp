@@ -6,6 +6,9 @@ import com.example.lurk.api.responses.AuthResponse
 import com.example.lurk.authDataStore
 import com.example.lurk.retrofit_clients.AuthClient
 
+/**
+ * Repository that will handle the Authentication calls to the reddit api
+ */
 class RedditAuthRepo {
     private val authClient = AuthClient.webservice
     private val decodedHeader = "${BuildConfig.CLIENT_ID}:"

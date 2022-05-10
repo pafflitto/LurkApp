@@ -8,6 +8,7 @@ import kotlin.math.round
 
 open class Post(private val data: PostData)
 {
+    val id: String = data.id
     val title: String = data.title
     val author: String = data.author
     val subreddit: String = data.subredditNamePrefixed

@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInHorizontally

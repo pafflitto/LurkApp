@@ -1,6 +1,7 @@
 package com.example.lurk.api.responses
 import com.google.gson.annotations.SerializedName
 
+// Subreddit class that holds data about the subreddit. This POJO is nested in the search results
 data class Subreddit(
     @SerializedName("allowedPostTypes")
     var allowedPostTypes: AllowedPostTypes = AllowedPostTypes(),

@@ -5,6 +5,9 @@ import com.example.lurk.*
 import com.example.lurk.retrofit_clients.RedditClient
 import com.example.lurk.retrofit_clients.handleRequest
 
+/**
+ * Repository to handle the content calls to Reddit's api
+ */
 class RedditRepo {
 
     private val redditClient = RedditClient.webservice

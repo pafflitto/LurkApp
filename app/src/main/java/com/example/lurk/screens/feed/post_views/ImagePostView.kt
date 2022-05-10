@@ -1,13 +1,12 @@
 package com.example.lurk.screens.feed.post_views
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -25,27 +24,25 @@ import com.example.lurk.ui.theme.LurkTheme
 @Composable
 fun ImagePostView(
     post: ImagePost,
+    expandMedia: (Post) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    Box (
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Image(
-            painter = rememberImagePainter(
-                data = post.url,
-                builder = {
-                    size(OriginalSize)
-                    placeholder(R.drawable.ic_image_not_loaded)
-                }
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = modifier
-                .heightIn(0.dp, 500.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .align(Alignment.Center)
-        )
-    }
+    Image(
+        painter = rememberImagePainter(
+            data = post.url,
+            builder = {
+                size(OriginalSize)
+                placeholder(R.drawable.ic_image_not_loaded)
+            }
+        ),
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = modifier
+            .clickable { expandMedia(post) }
+            .heightIn(0.dp, 600.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+    )
 }
 
 @ExperimentalCoilApi

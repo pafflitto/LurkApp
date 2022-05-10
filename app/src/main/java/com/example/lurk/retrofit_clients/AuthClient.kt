@@ -6,7 +6,9 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
+/**
+ * Retrofit Client used to call authentication requests to the Reddit API
+ */
 object AuthClient {
     val webservice by lazy {
          val client = OkHttpClient.Builder().addInterceptor(DebugInterceptor()).build()

@@ -16,6 +16,7 @@ import com.example.lurk.ui_components.PillButton
 @Composable
 fun RedditTitle(
     post: Post,
+    subredditSelected: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -29,7 +30,10 @@ fun RedditTitle(
         Spacer(modifier = Modifier.height(4.dp))
         Row {
             PillButton(
-                text = post.subreddit
+                text = post.subreddit,
+                onClick = {
+                    subredditSelected(post.subreddit.substring(2))
+                }
             )
             Spacer(modifier = Modifier.width(8.dp))
             PillButton(

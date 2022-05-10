@@ -7,11 +7,17 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.lurk.api.responses.AuthResponse
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
 import java.util.*
 
+@OptIn(DelicateCoroutinesApi::class)
+/**
+ * Datastore to hold the Authentication values from the reddit api. The state flows containing the authentication parameters
+ * are all application wide and flow on the GlobalScope
+ */
 class RedditAuthDataStore(private val context: Context) {
 
     private val Context.authDataStore by preferencesDataStore(name = AUTH_PREFERENCES)
@@ -29,6 +35,12 @@ class RedditAuthDataStore(private val context: Context) {
         val USER_SIGNED_IN = booleanPreferencesKey("USER_SIGNED_IN")
     }
 
+    /**
+     * Function that will save the Authentication response from reddit. Will handle both userless and user Authetication response.
+     *
+     * @param response auth response from reddit api
+     * @param userlessLogin boolean to tell us if the auth response is userless or not
+     */
     suspend fun saveAuthResponse(response: AuthResponse, userlessLogin: Boolean = oUserSignedIn.value) {
         context.authDataStore.edit {
             response.accessToken?.let { accessToken ->

@@ -10,9 +10,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
 
+/**
+ * Datastore to hold the User's selected preferences.
+ * For example, the theme and their favorite subreddits
+ */
 class UserPreferencesDataStore(private val context: Context) {
 
     private val Context.userPrefDataStore by preferencesDataStore(name = USER_PREFS)
+    private val coroutineScope = GlobalScope
 
     companion object {
         private const val USER_PREFS = "USER_PREFS"
@@ -21,6 +26,9 @@ class UserPreferencesDataStore(private val context: Context) {
         val FAVORITE_SUBREDDITS = stringPreferencesKey("FAV_SUBREDDITS")
     }
 
+    /**
+     * Saves the user selected theme to the datastore
+     */
     suspend fun saveTheme(theme: UserTheme) {
         context.userPrefDataStore.edit {
             it[THEME] = theme.ordinal
@@ -29,8 +37,14 @@ class UserPreferencesDataStore(private val context: Context) {
 
     val userThemeFlow: StateFlow<UserTheme> = context.userPrefDataStore.data.mapLatest {
         UserTheme.values()[it[THEME] ?: 0]
-    }.flowOn(Dispatchers.IO).stateIn(GlobalScope, SharingStarted.Eagerly, UserTheme.Auto)
+    }.flowOn(Dispatchers.IO).stateIn(coroutineScope, SharingStarted.Eagerly, UserTheme.Auto)
 
+    /**
+     * Function to save or remove a favorite subreddit from the user's lists of subreddits
+     *
+     * @param subreddit string of subreddit name to save or remove from the fav list
+     * @param shouldSave boolean telling the function to save of remove the subreddit from the datastore
+     */
     suspend fun saveRemoveFavoriteSubreddit(subreddit: String, shouldSave: Boolean) {
         context.userPrefDataStore.edit { prefs ->
             if (shouldSave) {
@@ -48,7 +62,8 @@ class UserPreferencesDataStore(private val context: Context) {
         }
     }
 
+    // Flow of the user's favorite subreddits. Subreddit names are seperated by a comma. For example, android, androidDev, programminghumor
     val favoriteSubredditFlow: StateFlow<List<String>> = context.userPrefDataStore.data.mapLatest {
         it[FAVORITE_SUBREDDITS]?.split(",") ?: emptyList()
-    }.flowOn(Dispatchers.IO).stateIn(GlobalScope, SharingStarted.Eagerly, emptyList())
+    }.flowOn(Dispatchers.IO).stateIn(coroutineScope, SharingStarted.Eagerly, emptyList())
 }

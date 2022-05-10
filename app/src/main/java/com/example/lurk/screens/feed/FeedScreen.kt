@@ -37,6 +37,8 @@ fun FeedScreen(
     feed: Feed?,
     loadingState: LoadingState,
     updateVoteStatus: (Voted) -> Unit,
+    subredditSelected: (String) -> Unit,
+    expandMedia: (Post) -> Unit,
 )
 {
     val listState = rememberLazyListState()
@@ -60,7 +62,9 @@ fun FeedScreen(
                 Posts(
                     posts = posts,
                     updateVoteStatus = updateVoteStatus,
-                    listState = listState
+                    listState = listState,
+                    expandMedia = expandMedia,
+                    subredditSelected = subredditSelected
                 )
             }
             else {
@@ -76,8 +80,10 @@ fun FeedScreen(
 private fun Posts(
     posts: LazyPagingItems<Post>,
     updateVoteStatus: (Voted) -> Unit,
-    listState: LazyListState
-) {
+    listState: LazyListState,
+    expandMedia: (Post) -> Unit,
+    subredditSelected: (String) -> Unit
+    ) {
 
     AnimatedVisibility(
         visible = posts.itemCount > 0,
@@ -95,11 +101,20 @@ private fun Posts(
             contentPadding = PaddingValues(4.dp),
             state = listState
         ) {
-            items(posts) { post ->
+            items(
+                items = posts,
+                key = {
+                    it.id
+                }
+            ) { post ->
                 if (post != null) {
                     PostView(
                         post = post,
-                        updateVoteStatus = updateVoteStatus
+                        updateVoteStatus = updateVoteStatus,
+                        expandMedia = expandMedia,
+                        subredditSelected = {
+                            subredditSelected(it)
+                        }
                     )
                 }
             }
@@ -110,7 +125,9 @@ private fun Posts(
 @Composable
 private fun PostView(
     post: Post,
-    updateVoteStatus: (Voted) -> Unit
+    subredditSelected: (String) -> Unit = {},
+    updateVoteStatus: (Voted) -> Unit = {},
+    expandMedia: (Post) -> Unit = {}
 )
 {
     var voted by remember { mutableStateOf(post.voted) }
@@ -139,6 +156,7 @@ private fun PostView(
         ) {
             RedditTitle(
                 post = post,
+                subredditSelected = subredditSelected,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
             )
             // Content
@@ -150,7 +168,7 @@ private fun PostView(
                 )
                 is ImagePost -> ImagePostView(
                     post = post,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    expandMedia = expandMedia
                 )
                 else -> {}// Title and footer only
             }
@@ -180,7 +198,7 @@ fun FeedScreenPreviewDark()
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 repeat(5)
                 {
-                    PostView(post = Post.exampleTextPost) {}
+                    PostView(post = Post.exampleTextPost)
                 }
             }
         }
@@ -198,7 +216,7 @@ fun FeedScreenPreviewLight()
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 repeat(5)
                 {
-                    PostView(post = Post.exampleTextPost) {}
+                    PostView(post = Post.exampleTextPost)
                 }
             }
         }

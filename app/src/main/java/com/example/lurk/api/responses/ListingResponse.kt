@@ -1,5 +1,8 @@
 
 import com.google.gson.annotations.SerializedName
+/*
+File Containing Generated POJOs from the Reddit Api response
+ */
 data class ListingResponse(
     @SerializedName("data")
     var `data`: Data = Data(),
