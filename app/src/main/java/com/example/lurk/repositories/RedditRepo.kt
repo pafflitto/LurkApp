@@ -4,6 +4,7 @@ import ListingResponse
 import com.example.lurk.*
 import com.example.lurk.retrofit_clients.RedditClient
 import com.example.lurk.retrofit_clients.handleRequest
+import com.example.lurk.viewmodels.UserSubreddit
 
 /**
  * Repository to handle the content calls to Reddit's api

@@ -2,7 +2,12 @@ package com.example.lurk.repositories
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.example.lurk.screens.feed.GifPost
+import com.example.lurk.screens.feed.ImagePost
 import com.example.lurk.screens.feed.Post
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Class that holds the PagingSource for the feed page
@@ -10,6 +15,7 @@ import com.example.lurk.screens.feed.Post
 class FeedSource(
     val subreddit: String,
     val repo: RedditRepo,
+    val coroutineScope: CoroutineScope
 ) : PagingSource<String, Post>() {
 
     override fun getRefreshKey(state: PagingState<String, Post>): String? {
@@ -30,7 +36,14 @@ class FeedSource(
         )
 
         val posts = response?.data?.children?.map {
-            Post.build(it.data)
+            val post = Post.build(it.data)
+            coroutineScope.launch(Dispatchers.IO) {
+                when (post) {
+                    is GifPost -> post.loadThumbnail()
+                    is ImagePost -> post.loadImage()
+                }
+            }
+            post
         } ?: emptyList()
 
         return LoadResult.Page(

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.exoplayer2.ui.StyledPlayerView android:id="@+id/player_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:use_controller="false"
+    app:use_artwork="true"
+    app:resize_mode="fixed_width"
+    app:shutter_background_color="#00000000"
+    app:surface_type="texture_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" />

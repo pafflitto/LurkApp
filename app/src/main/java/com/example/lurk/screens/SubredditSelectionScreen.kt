@@ -17,6 +17,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,10 +32,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.lurk.R
-import com.example.lurk.UserSubreddit
+import com.example.lurk.viewmodels.UserSubreddit
 
 @Composable
 fun SubredditSelectionScreen(
+    currentSubreddit: String,
     subreddits: Map<String, List<UserSubreddit>>,
     subredditSearchText: String,
     subredditSearchTextChange: (String) -> Unit,
@@ -42,180 +44,212 @@ fun SubredditSelectionScreen(
     subredditFavoriteToggle: (subreddit: String, currentlyFavorited: Boolean) -> Unit,
     subredditSelected: (subreddit: String) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
     var searchOpen by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current // Focus manager to use with search text field
     val focusRequester = remember { FocusRequester() } // focus requester for textfield
-    var searchHasFocus by remember { mutableStateOf(false) }
 
     Surface(modifier = Modifier.fillMaxSize()) {
-        Box {
-            AnimatedVisibility(
-                visible = !searchOpen,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
+
+        AnimatedVisibility(visible = subreddits.isEmpty(), exit = fadeOut()) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator(modifier = Modifier.align(Center))
+            }
+        }
+
+        AnimatedVisibility(
+            visible = subreddits.isNotEmpty(),
+            enter = slideInVertically(initialOffsetY = { it / 2 })
+        ) {
+            Box {
+                AnimatedVisibility(
+                    visible = !searchOpen,
+                    enter = fadeIn(),
+                    exit = fadeOut()
                 ) {
-                    item {
-                        Text(text = "Subreddits", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-                    }
-                    subreddits.forEach { entry ->
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                    ) {
                         item {
                             Text(
-                                text = entry.key,
-                                modifier = Modifier.padding(top = 16.dp)
+                                text = "Subreddits",
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold
                             )
                         }
-
-                        items(
-                            items = entry.value,
-                        ) { item ->
+                        item {
                             SubredditCard(
-                                userSubreddit = item,
-                                subredditSelected = {
-                                    focusManager.clearFocus(true)
-                                    subredditSelected(it)
-                                },
-                                subredditFavoriteToggle = subredditFavoriteToggle,
+                                userSubreddit = UserSubreddit(currentSubreddit, null),
+                                subredditSelected = {},
+                                subredditFavoriteToggle = {_,_ ->},
+                                currentSubreddit = true,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                        subreddits.forEach { entry ->
+                            item {
+                                Text(
+                                    text = entry.key,
+                                    modifier = Modifier.padding(top = 16.dp)
+                                )
+                            }
+
+                            items(
+                                items = entry.value,
+                            ) { item ->
+                                SubredditCard(
+                                    userSubreddit = item,
+                                    subredditSelected = {
+                                        focusManager.clearFocus(true)
+                                        subredditSelected(it)
+                                    },
+                                    subredditFavoriteToggle = subredditFavoriteToggle,
+                                )
+                            }
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(72.dp))
+                        }
+                    }
+                }
+
+                Box(Modifier.fillMaxSize()) {
+                    AnimatedVisibility(
+                        visible = searchOpen,
+                        enter = slideInHorizontally(
+                            animationSpec = tween(durationMillis = 500),
+                            initialOffsetX = { -it }),
+                        exit = slideOutHorizontally(targetOffsetX = { -it })
+                    )
+                    {
+                        Box(
+                            Modifier
+                                .clickable {
+                                    searchOpen = false
+                                }
+                                .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                                .background(color = MaterialTheme.colorScheme.primary)
+                                .fillMaxSize()
+                        ) {
+                            Text(
+                                text = "Back",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(16.dp)
                             )
                         }
                     }
-                    item {
-                        Spacer(modifier = Modifier.height(72.dp))
+
+                    LaunchedEffect(searchOpen) {
+                        focusManager.clearFocus(true)
                     }
-                }
-            }
 
-            AnimatedVisibility(
-                visible = !searchOpen,
-                enter = scaleIn(animationSpec = spring()),
-                exit = scaleOut(animationSpec = tween(200)),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp)
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        searchOpen = !searchOpen
-                    },
-                ) {
-                    Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search Icon")
-                }
-            }
-
-            Box(Modifier.fillMaxSize()) {
-                AnimatedVisibility(
-                    visible = searchOpen,
-                    enter = slideInHorizontally(animationSpec = tween(durationMillis = 500), initialOffsetX = { - it }),
-                    exit = slideOutHorizontally(targetOffsetX = { -it})
-                )
-                {
-                    Box(
-                        Modifier
-                            .clickable {
-                                searchOpen = false
-                            }
-                            .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
-                            .background(color = MaterialTheme.colorScheme.primary)
-                            .fillMaxSize()
+                    AnimatedVisibility(
+                        visible = searchOpen,
+                        enter = slideInHorizontally(initialOffsetX = { -it }),
+                        exit = slideOutHorizontally(targetOffsetX = { -it })
                     ) {
-                        Text(
-                            text = "Back",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.Bold,
+                        val keyboardController = LocalSoftwareKeyboardController.current
+                        Column(
                             modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(16.dp)
-                        )
-                    }
-                }
-
-                LaunchedEffect(searchOpen) {
-                    focusManager.clearFocus(true)
-                }
-
-                AnimatedVisibility(
-                    visible = searchOpen,
-                    enter = slideInHorizontally(initialOffsetX = { - it }),
-                    exit = slideOutHorizontally(targetOffsetX = { -it} )
-                ) {
-                    val keyboardController = LocalSoftwareKeyboardController.current
-                    Column(modifier = Modifier
-                        .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                        .fillMaxWidth(0.8f)
-                        .fillMaxHeight()
-                    ) {
-                        TextField(
-                            value = subredditSearchText,
-                            onValueChange = subredditSearchTextChange,
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Rounded.Search,
-                                    contentDescription = "Search Icon"
-                                )
-                            },
-                            modifier = Modifier
-                                .background(color = MaterialTheme.colorScheme.primaryContainer)
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp, horizontal = 16.dp)
-                                .focusRequester(focusRequester)
-                                .onFocusChanged {
-                                    if (it.hasFocus) {
-                                        keyboardController?.show()
-                                    }
+                                .clip(RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .fillMaxWidth(0.8f)
+                                .fillMaxHeight()
+                        ) {
+                            TextField(
+                                value = subredditSearchText,
+                                onValueChange = subredditSearchTextChange,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Search,
+                                        contentDescription = "Search Icon"
+                                    )
                                 },
-                            colors = TextFieldDefaults.textFieldColors(
-                                textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                containerColor = Color.Transparent,
-                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Search,
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onSearch = {
-                                    focusManager.clearFocus()
-                                }
+                                modifier = Modifier
+                                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp, horizontal = 16.dp)
+                                    .focusRequester(focusRequester)
+                                    .onFocusChanged {
+                                        if (it.hasFocus) {
+                                            keyboardController?.show()
+                                        }
+                                    },
+                                colors = TextFieldDefaults.textFieldColors(
+                                    textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    containerColor = Color.Transparent,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Search,
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onSearch = {
+                                        focusManager.clearFocus()
+                                    }
+                                )
                             )
-                        )
-                        LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                            if (subredditSearchResults.isNotEmpty()) {
-                                item {
-                                    Text(
-                                        text = "Results",
-                                        Modifier.padding(top = 16.dp)
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    horizontal = 16.dp,
+                                    vertical = 8.dp
+                                )
+                            ) {
+                                if (subredditSearchResults.isNotEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Results",
+                                            Modifier.padding(top = 16.dp)
+                                        )
+                                    }
+                                }
+
+                                items(
+                                    items = subredditSearchResults,
+                                    key = {
+                                        it
+                                    }
+                                ) { name ->
+                                    SubredditCard(
+                                        modifier = Modifier.animateItemPlacement(),
+                                        userSubreddit = UserSubreddit(name),
+                                        subredditSelected = {
+                                            searchOpen = false
+                                            subredditSelected(it)
+                                            focusManager.clearFocus(true)
+                                        },
+                                        subredditFavoriteToggle = subredditFavoriteToggle,
+                                        fromSearch = true
                                     )
                                 }
                             }
 
-                            items(
-                                items = subredditSearchResults,
-                                key = {
-                                    it
-                                }
-                            ) { name ->
-                                SubredditCard(
-                                    modifier = Modifier.animateItemPlacement(),
-                                    userSubreddit = UserSubreddit(name),
-                                    subredditSelected = {
-                                        searchOpen = false
-                                        subredditSelected(it)
-                                        focusManager.clearFocus(true)
-                                    },
-                                    subredditFavoriteToggle = subredditFavoriteToggle,
-                                    fromSearch = true
-                                )
+                            LaunchedEffect(Unit) {
+                                focusRequester.requestFocus()
                             }
                         }
+                    }
+                }
+                AnimatedVisibility(
+                    visible = !searchOpen,
+                    enter = scaleIn(animationSpec = spring()),
+                    exit = scaleOut(animationSpec = tween(200), 0f),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp, bottom = 16.dp)
+                ) {
+                    LargeFloatingActionButton(
+                        onClick = {
+                            searchOpen = !searchOpen
+                        },
+                        containerColor = MaterialTheme.colorScheme.primary,
 
-                        LaunchedEffect(Unit) {
-                            focusRequester.requestFocus()
-                        }
+                        ) {
+                        Icon(imageVector = Icons.Rounded.Search, contentDescription = "Search Icon")
                     }
                 }
             }
@@ -229,6 +263,7 @@ private fun SubredditCard(
     userSubreddit: UserSubreddit,
     subredditSelected: (subreddit: String) -> Unit,
     subredditFavoriteToggle: (subreddit: String, currentlyFavorited: Boolean) -> Unit,
+    currentSubreddit: Boolean = false,
     fromSearch: Boolean = false,
 ) {
     Column(
@@ -239,6 +274,9 @@ private fun SubredditCard(
                 subredditSelected(userSubreddit.name)
             },
             shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (currentSubreddit) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+            )
         ) {
             Row(verticalAlignment = CenterVertically, modifier = Modifier
                 .height(48.dp)

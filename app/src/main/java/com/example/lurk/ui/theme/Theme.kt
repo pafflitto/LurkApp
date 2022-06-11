@@ -6,8 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import com.example.lurk.UserTheme
 import com.example.lurk.userPrefDataStore
+import com.example.lurk.viewmodels.UserTheme
 import com.google.android.material.color.ColorRoles
 import com.google.android.material.color.MaterialColors
 
@@ -124,7 +124,7 @@ fun LurkTheme(
 	val context = LocalContext.current
 
 	var colors = when (preferredTheme) {
-		UserTheme.Auto -> LightThemeColors // TODO
+		UserTheme.Auto -> if (isSystemInDarkTheme()) DarkThemeColors else LightThemeColors
 		UserTheme.Dark -> DarkThemeColors
 		UserTheme.Light -> LightThemeColors
 		UserTheme.MaterialYou -> {
@@ -157,10 +157,13 @@ object Extended {
 //		get() = LocalExtendedColors.current.colors[1].roles
 	val PostBackgroundColor: Color
 		@Composable
-		get() = when(userPrefDataStore.userThemeFlow.value) {
-			UserTheme.Dark -> Color.Black
-			UserTheme.Light -> Color.White
-			UserTheme.MaterialYou -> if (isSystemInDarkTheme()) Color.Black else Color.White
-			UserTheme.Auto -> Color.White // TODO
+		get() {
+			val theme by userPrefDataStore.userThemeFlow.collectAsState()
+			return when (theme) {
+				UserTheme.Dark -> Color.Black
+				UserTheme.Light -> Color.White
+				UserTheme.MaterialYou -> if (isSystemInDarkTheme()) Color.Black else Color.White
+				UserTheme.Auto -> if (isSystemInDarkTheme()) Color.Black else Color.White
+			}
 		}
 }

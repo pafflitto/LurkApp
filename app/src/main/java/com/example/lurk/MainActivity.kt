@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,12 +23,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.lurk.api.RedditApiConstants
 import com.example.lurk.screens.*
 import com.example.lurk.screens.feed.FeedScreen
 import com.example.lurk.screens.feed.Post
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui_components.NavBarItem.*
+import com.example.lurk.viewmodels.FeedViewModel
+import com.example.lurk.viewmodels.LurkViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -38,6 +42,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private val viewModel: LurkViewModel by viewModels()
+    private val feedViewModel: FeedViewModel by viewModels()
     private val authManager = LurkApplication.instance().authManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +59,12 @@ class MainActivity : ComponentActivity() {
                 controller.setNavigationBarColor(MaterialTheme.colorScheme.surface)
                 val scaffoldState = rememberScaffoldState()
 
+                LaunchedEffect(scaffoldState.drawerState.currentValue) {
+                    feedViewModel.updateDrawerState(scaffoldState.drawerState.currentValue)
+                }
+
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+
                 // access listener
                 val userHasAccess by authManager.userHasAccess.collectAsState()
                 var expandedMedia by remember { mutableStateOf<Post?>(null) }
@@ -63,8 +74,11 @@ class MainActivity : ComponentActivity() {
                     controller.setStatusBarColor(mainStatusColor)
                     controller.setNavigationBarColor(mainStatusColor)
                 }
-                Box {
+                Box(
+                    Modifier.background(MaterialTheme.colorScheme.surface)
+                ) {
                     Scaffold(
+                        backgroundColor = MaterialTheme.colorScheme.surface,
                         scaffoldState = scaffoldState,
                         bottomBar = {
                             AnimatedVisibility(
@@ -81,19 +95,23 @@ class MainActivity : ComponentActivity() {
                             bottomStart = 0.dp,
                             bottomEnd = 12.dp
                         ),
+                        drawerGesturesEnabled = navBackStackEntry?.destination?.route == Home.route,
                         drawerContent = {
-                            val subreddits by viewModel.oUserSubreddits.collectAsState()
+                            val subreddits by feedViewModel.oUserSubreddits.collectAsState()
+                            val currentSubreddit by feedViewModel.subredditFlow.collectAsState()
                             SubredditSelectionScreen(
                                 subreddits = subreddits,
-                                subredditSearchText = viewModel.subredditSearchText,
-                                subredditSearchTextChange = viewModel::subredditSearchTextChange,
-                                subredditSearchResults = viewModel.subredditSearchResults,
-                                subredditFavoriteToggle = viewModel::toggleFavoriteSubreddit,
+                                currentSubreddit = currentSubreddit,
+                                subredditSearchText = feedViewModel.subredditSearchText,
+                                subredditSearchTextChange = feedViewModel::subredditSearchTextChange,
+                                subredditSearchResults = feedViewModel.subredditSearchResults,
+                                subredditFavoriteToggle = feedViewModel::toggleFavoriteSubreddit,
                                 subredditSelected = { subreddit ->
+                                    feedViewModel.clearSubredditSearchText()
                                     scope.launch {
                                         scaffoldState.drawerState.close()
                                     }
-                                    viewModel.subredditSelected(subreddit)
+                                    feedViewModel.subredditSelected(subreddit)
                                 }
                             )
                         }
@@ -112,8 +130,8 @@ class MainActivity : ComponentActivity() {
                                 }
                                 composable(
                                     Screen.Login.name,
-                                    enterTransition = pageEnterTransition(),
-                                    exitTransition = pageExitTransition()
+                                    enterTransition = { fadeIn() },
+                                    exitTransition = { fadeOut() }
                                 ) {
                                     LoginScreen(
                                         navController = navController,
@@ -132,15 +150,18 @@ class MainActivity : ComponentActivity() {
                                     enterTransition = pageEnterTransition(),
                                     exitTransition = pageExitTransition()
                                 ) {
-                                    val feed by viewModel.oFeed.collectAsState()
+                                    val feed by feedViewModel.oFeed.collectAsState()
                                     FeedScreen(
                                         feed = feed,
-                                        loadingState = viewModel.feedLoadingState,
-                                        updateVoteStatus = viewModel::voteStatusUpdated,
-                                        subredditSelected = viewModel::subredditSelected,
+                                        listState = feedViewModel.feedListState,
+                                        loadingState = feedViewModel.feedLoadingState,
+                                        updateVoteStatus = feedViewModel::voteStatusUpdated,
+                                        subredditSelected = feedViewModel::subredditSelected,
                                         expandMedia = { post ->
                                             expandedMedia = post
-                                        }
+                                        },
+                                        updateTopVisibleItems = feedViewModel::updateVisibleItems,
+                                        gifExoPlayers = feedViewModel.gifExoPlayers
                                     )
                                 }
                                 composable(

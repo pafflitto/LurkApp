@@ -1,5 +1,6 @@
 package com.example.lurk.screens
 
+import android.view.LayoutInflater
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -9,7 +10,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.*
@@ -20,13 +20,19 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberImagePainter
-import coil.size.OriginalSize
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
+import com.example.lurk.screens.feed.GifPost
 import com.example.lurk.screens.feed.ImagePost
 import com.example.lurk.screens.feed.Post
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.ui.StyledPlayerView
+import com.google.android.exoplayer2.util.EventLogger
 
 @Composable
 fun ExpandedMediaScreen(
@@ -53,21 +59,44 @@ fun ExpandedMediaScreen(
             when(post) {
                 is ImagePost -> {
                     Image(
-                        painter = rememberImagePainter(
-                            data = post.url,
-                            builder = {
-                                size(OriginalSize)
-                                placeholder(R.drawable.ic_image_not_loaded)
-                            }
-                        ),
+                        painter = rememberDrawablePainter(drawable = post.image),
                         contentDescription = null,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxSize()
                             .align(Alignment.Center)
+                            .pointerInput(Unit) {
+                                detectVerticalDragGestures(
+                                    onDragCancel = {
+                                        dragChangeAmount = 0f
+                                    },
+                                    onDragEnd = {
+                                        if (dragChangeAmount / maxDragAmount > 1) {
+                                            shrinkMedia()
+                                        }
+                                        dragChangeAmount = 0f
+                                    },
+                                    onVerticalDrag = { _, dragAmount ->
+                                        dragChangeAmount += dragAmount
+                                    }
+                                )
+                            }
                     )
-                    Spacer(modifier = Modifier
+                }
+                is GifPost -> {
+                    val context = LocalContext.current
+                    val exoPlayer = remember {
+                        ExoPlayer.Builder(context).build().apply {
+                            playWhenReady = true
+                            addAnalyticsListener(EventLogger(null))
+                            setMediaItem(MediaItem.fromUri(post.url))
+                            prepare()
+                        }
+                    }
+
+                    AndroidView(modifier = Modifier
                         .fillMaxSize()
+                        .align(Alignment.Center)
                         .pointerInput(Unit) {
                             detectVerticalDragGestures(
                                 onDragCancel = {
@@ -83,6 +112,13 @@ fun ExpandedMediaScreen(
                                     dragChangeAmount += dragAmount
                                 }
                             )
+                        },
+                        factory = {
+                            val layout = LayoutInflater.from(context).inflate(R.layout.playerview, null, false)
+                            val playerView = layout.findViewById<StyledPlayerView>(R.id.player_view)
+                            playerView.apply {
+                               player = exoPlayer
+                            }
                         }
                     )
                 }

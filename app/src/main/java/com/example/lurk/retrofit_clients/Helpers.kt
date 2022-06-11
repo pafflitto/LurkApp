@@ -27,11 +27,11 @@ class DebugInterceptor : Interceptor {
         val request: Request = chain.request()
 
         val response = chain.proceed(request)
-        val rawJson = response.body()!!.string()
+        val rawJson = response.body!!.string()
 
         Log.d("ResponseInterceptor", String.format("raw JSON response is: %s", rawJson))
 
         // Re-create the response before returning it because body can be read only once
-        return response.newBuilder().body(ResponseBody.create(response.body()?.contentType(), rawJson)).build()
+        return response.newBuilder().body(ResponseBody.create(response.body?.contentType(), rawJson)).build()
     }
 }
