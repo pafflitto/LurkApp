@@ -12,6 +12,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
+import com.example.lurk.screens.expanded_media_screen.ExpandedMedia
 import com.example.lurk.screens.feed.ImagePost
 import com.example.lurk.screens.feed.Post
 import com.example.lurk.ui.theme.LurkTheme
@@ -21,7 +22,7 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 @Composable
 fun ImagePostView(
     post: ImagePost,
-    expandMedia: (Post) -> Unit = {},
+    expandMedia: (ExpandedMedia) -> Unit = { },
     modifier: Modifier = Modifier
 ) {
     Image(
@@ -29,7 +30,7 @@ fun ImagePostView(
         contentDescription = null,
         contentScale = ContentScale.FillWidth,
         modifier = modifier
-            .clickable { expandMedia(post) }
+            .clickable { expandMedia(ExpandedMedia(post = post, exoPlayer = null)) }
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
     )

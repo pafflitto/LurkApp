@@ -1,17 +1,20 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.lurk.screens.feed
 
 import android.content.res.Configuration
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -24,12 +27,9 @@ import androidx.compose.ui.unit.sp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
+import com.example.lurk.screens.expanded_media_screen.ExpandedMedia
 import com.example.lurk.screens.feed.Post.Companion.Voted
-import com.example.lurk.screens.feed.Post.Companion.Voted.*
-import com.example.lurk.screens.feed.post_views.GifPostView
-import com.example.lurk.screens.feed.post_views.ImagePostView
-import com.example.lurk.screens.feed.post_views.TextPostView
-import com.example.lurk.ui.theme.Extended
+import com.example.lurk.screens.feed.post_views.PostView
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui_components.MainPageScreen
 import com.example.lurk.viewmodels.FeedViewModel
@@ -44,13 +44,17 @@ fun FeedScreen(
     loadingState: LoadingState,
     updateVoteStatus: (Voted) -> Unit,
     subredditSelected: (String) -> Unit,
-    expandMedia: (Post) -> Unit,
+    expandMedia: (ExpandedMedia) -> Unit,
+    expandedMedia: ExpandedMedia? = null,
     gifExoPlayers: SnapshotStateMap<String, ExoPlayer>,
     updateTopVisibleItems: (Map<Pair<String, Boolean>, String>) -> Unit
 )
 {
+    val smallTitle by remember { derivedStateOf {
+        listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset > 0
+    }}
     val subredditTextSize by animateFloatAsState(
-        if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset > 0) {
+        if (smallTitle) {
             24f
         }
         else {
@@ -73,6 +77,7 @@ fun FeedScreen(
                         updateVoteStatus = updateVoteStatus,
                         listState = listState,
                         expandMedia = expandMedia,
+                        expandedMedia = expandedMedia,
                         subredditSelected = subredditSelected,
                         gifExoPlayers = gifExoPlayers,
                         updateTopVisibleItems = updateTopVisibleItems
@@ -88,12 +93,14 @@ fun FeedScreen(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun Posts(
     posts: LazyPagingItems<Post>,
     updateVoteStatus: (Voted) -> Unit,
     listState: LazyListState,
-    expandMedia: (Post) -> Unit,
+    expandMedia: (ExpandedMedia) -> Unit,
+    expandedMedia: ExpandedMedia?,
     subredditSelected: (String) -> Unit,
     gifExoPlayers: Map<String, ExoPlayer>,
     updateTopVisibleItems: (Map<Pair<String, Boolean>, String>) -> Unit,
@@ -109,12 +116,14 @@ private fun Posts(
     AnimatedVisibility(
         visible = posts.itemCount > 0,
         enter = slideInVertically(
-            initialOffsetY = { it / 2 },
-            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy),
+            initialOffsetY = { (it * 0.1f).toInt() }
         ),
-        exit = fadeOut()
+        exit = fadeOut() + scaleOut(
+            targetScale = 0.5f,
+            animationSpec = tween(200)
+        )
     ) {
-
         LaunchedEffect(Unit) {
             snapshotFlow {
                 // Flow to tell the exoplayer map which gifs to play
@@ -152,7 +161,7 @@ private fun Posts(
         ) {
             itemsIndexed(
                 items = posts,
-                key = {index, item -> "$index-${item.id}"}
+                key = { index, item -> "$index-${item.id}" }
             ) { index, post ->
                 if (post != null) {
                     PostView(
@@ -160,6 +169,7 @@ private fun Posts(
                         post = post,
                         updateVoteStatus = updateVoteStatus,
                         expandMedia = expandMedia,
+                        expandedMedia = if (post.id == expandedMedia?.post?.id) expandedMedia else null,
                         subredditSelected = {
                             subredditSelected(it)
                         },
@@ -167,79 +177,6 @@ private fun Posts(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PostView(
-    key: String,
-    post: Post,
-    subredditSelected: (String) -> Unit = {},
-    updateVoteStatus: (Voted) -> Unit = {},
-    expandMedia: (Post) -> Unit = {},
-    gifExoPlayers: Map<String, ExoPlayer>
-) {
-    var voted by remember { mutableStateOf(post.voted) }
-    val clicked by remember { mutableStateOf(post.clicked)}
-
-    LaunchedEffect(voted) {
-        updateVoteStatus(voted)
-    }
-
-    LaunchedEffect(clicked) {
-        // TODO Add in vm function here to update the post
-    }
-
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Extended.PostBackgroundColor
-        ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = if (post.clicked) 0.dp else 4.dp,
-            pressedElevation = 0.dp
-        ),
-        onClick = {}
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            RedditTitle(
-                post = post,
-                subredditSelected = subredditSelected,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-            )
-            // Content
-            when (post) {
-                is TextPost -> TextPostView(
-                    post = post,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-                is ImagePost -> ImagePostView(
-                    post = post,
-                    expandMedia = expandMedia
-                )
-                is GifPost -> {
-                    GifPostView(
-                        post = post,
-                        expandMedia = expandMedia,
-                        exoPlayer = gifExoPlayers[key]
-                    )
-                }
-                else -> {}// Title and footer only
-            }
-
-            Footer(
-                post = post,
-                voted = voted,
-                upVoteClick = {
-                    voted = if (voted == UpVoted) NoVote else UpVoted
-                },
-                downVoteClick = {
-                    voted = if (voted == DownVoted) NoVote else DownVoted
-                }
-            )
         }
     }
 }

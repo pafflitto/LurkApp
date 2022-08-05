@@ -47,7 +47,7 @@ fun PillButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier
                 .pointerInteropFilter {
                     currentState = when (it.action) {
@@ -65,7 +65,7 @@ fun PillButton(
                     }
                     true
                 }
-                .background(color = MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(50))
+                .background(color = MaterialTheme.colorScheme.primary, RoundedCornerShape(50))
                 .padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
         )
     }

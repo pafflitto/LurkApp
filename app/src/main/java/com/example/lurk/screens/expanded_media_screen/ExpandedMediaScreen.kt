@@ -1,10 +1,12 @@
-package com.example.lurk.screens
+package com.example.lurk.screens.expanded_media_screen
 
 import android.view.LayoutInflater
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,27 +29,25 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
 import com.example.lurk.screens.feed.GifPost
 import com.example.lurk.screens.feed.ImagePost
-import com.example.lurk.screens.feed.Post
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.StyledPlayerView
-import com.google.android.exoplayer2.util.EventLogger
 
 @Composable
 fun ExpandedMediaScreen(
-    post: Post?,
+    showExpanded: Boolean = false,
+    expandedMedia: ExpandedMedia?,
     shrinkMedia: () -> Unit
 ) {
-
+    val post = expandedMedia?.post
     val maxDragAmount = -500f
     var dragChangeAmount by remember { mutableStateOf(0f) }
     val alpha by animateFloatAsState(targetValue = 1 - (dragChangeAmount / maxDragAmount))
     val offsetChange by animateDpAsState(targetValue = with (LocalDensity.current) { dragChangeAmount.toDp()})
     val scale by animateFloatAsState(targetValue =  if (dragChangeAmount != 0f)  (1 - ((dragChangeAmount / 5) / maxDragAmount)) else 1f)
     AnimatedVisibility(
-        visible = post != null,
+        visible = expandedMedia != null && showExpanded,
         enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+        exit = fadeOut(tween(0))
     ) {
         Box(
             modifier = Modifier
@@ -55,6 +55,22 @@ fun ExpandedMediaScreen(
                 .background(color = Color.Black)
                 .offset(y = if (offsetChange > 0.dp) 0.dp else offsetChange)
                 .scale(if (scale > 1f) 1f else scale)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragCancel = {
+                            dragChangeAmount = 0f
+                        },
+                        onDragEnd = {
+                            if (dragChangeAmount / maxDragAmount > 1) {
+                                shrinkMedia()
+                            }
+                            dragChangeAmount = 0f
+                        },
+                        onVerticalDrag = { _, dragAmount ->
+                            dragChangeAmount += dragAmount
+                        }
+                    )
+                }
         ) {
             when(post) {
                 is ImagePost -> {
@@ -65,60 +81,21 @@ fun ExpandedMediaScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .align(Alignment.Center)
-                            .pointerInput(Unit) {
-                                detectVerticalDragGestures(
-                                    onDragCancel = {
-                                        dragChangeAmount = 0f
-                                    },
-                                    onDragEnd = {
-                                        if (dragChangeAmount / maxDragAmount > 1) {
-                                            shrinkMedia()
-                                        }
-                                        dragChangeAmount = 0f
-                                    },
-                                    onVerticalDrag = { _, dragAmount ->
-                                        dragChangeAmount += dragAmount
-                                    }
-                                )
-                            }
                     )
                 }
                 is GifPost -> {
+                    var playerView by remember { mutableStateOf<StyledPlayerView?>(null) }
                     val context = LocalContext.current
-                    val exoPlayer = remember {
-                        ExoPlayer.Builder(context).build().apply {
-                            playWhenReady = true
-                            addAnalyticsListener(EventLogger(null))
-                            setMediaItem(MediaItem.fromUri(post.url))
-                            prepare()
-                        }
-                    }
-
                     AndroidView(modifier = Modifier
                         .fillMaxSize()
-                        .align(Alignment.Center)
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures(
-                                onDragCancel = {
-                                    dragChangeAmount = 0f
-                                },
-                                onDragEnd = {
-                                    if (dragChangeAmount / maxDragAmount > 1) {
-                                        shrinkMedia()
-                                    }
-                                    dragChangeAmount = 0f
-                                },
-                                onVerticalDrag = { _, dragAmount ->
-                                    dragChangeAmount += dragAmount
-                                }
-                            )
-                        },
+                        .align(Alignment.Center),
                         factory = {
                             val layout = LayoutInflater.from(context).inflate(R.layout.playerview, null, false)
-                            val playerView = layout.findViewById<StyledPlayerView>(R.id.player_view)
-                            playerView.apply {
-                               player = exoPlayer
+                            playerView = layout.findViewById(R.id.player_view)
+                            playerView?.apply {
+                               player = expandedMedia.exoPlayer
                             }
+                            playerView!!
                         }
                     )
                 }

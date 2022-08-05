@@ -10,6 +10,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
@@ -20,14 +21,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.lurk.api.RedditApiConstants
 import com.example.lurk.screens.*
+import com.example.lurk.screens.expanded_media_screen.ExpandedMedia
+import com.example.lurk.screens.expanded_media_screen.ExpandedMediaScreen
 import com.example.lurk.screens.feed.FeedScreen
-import com.example.lurk.screens.feed.Post
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui_components.NavBarItem.*
 import com.example.lurk.viewmodels.FeedViewModel
@@ -39,6 +43,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalAnimationApi::class)
 class MainActivity : ComponentActivity() {
 
     private val viewModel: LurkViewModel by viewModels()
@@ -54,6 +59,8 @@ class MainActivity : ComponentActivity() {
             LurkTheme {
                 val navController = rememberAnimatedNavController()
                 val scope = rememberCoroutineScope()
+                val hapticFeedback = LocalHapticFeedback.current
+
                 // A surface container using the 'background' color from the theme
                 controller.setStatusBarColor(MaterialTheme.colorScheme.surface)
                 controller.setNavigationBarColor(MaterialTheme.colorScheme.surface)
@@ -67,9 +74,12 @@ class MainActivity : ComponentActivity() {
 
                 // access listener
                 val userHasAccess by authManager.userHasAccess.collectAsState()
-                var expandedMedia by remember { mutableStateOf<Post?>(null) }
+                var expandedMedia by remember { mutableStateOf<ExpandedMedia?>(null) }
+                var showExpanded by remember { mutableStateOf(false) }
 
-                val mainStatusColor by animateColorAsState(targetValue = if (expandedMedia == null) MaterialTheme.colorScheme.surface else Color.Black)
+                val mainStatusColor by animateColorAsState(
+                    targetValue = if (!showExpanded) MaterialTheme.colorScheme.surface else Color.Black
+                )
                 LaunchedEffect(mainStatusColor) {
                     controller.setStatusBarColor(mainStatusColor)
                     controller.setNavigationBarColor(mainStatusColor)
@@ -86,7 +96,33 @@ class MainActivity : ComponentActivity() {
                                 enter = slideInVertically(initialOffsetY = { it / 2 }),
                                 exit = fadeOut()
                             ) {
-                                LurkBottomBar(navController = navController)
+                                LurkBottomBar(
+                                    navBackStackEntry = navBackStackEntry,
+                                    navItemClick = { item ->
+                                        navController.backQueue.clear()
+
+                                        when {
+                                            item == Home && item.route == navBackStackEntry?.destination?.route -> {
+                                                scope.launch {
+                                                    feedViewModel.feedListState.animateScrollToItem(0)
+                                                }
+                                            }
+                                            else -> {
+                                                navController.navigate(item.route)
+                                            }
+                                        }
+                                    },
+                                    longClick = { item ->
+                                        if (item == Home) {
+                                            hapticFeedback.performHapticFeedback(
+                                                HapticFeedbackType.LongPress
+                                            )
+                                            scope.launch {
+                                                scaffoldState.drawerState.open()
+                                            }
+                                        }
+                                    }
+                                )
                             }
                         },
                         drawerShape = RoundedCornerShape(
@@ -118,6 +154,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Surface(modifier = Modifier.padding(it)) {
                             AnimatedNavHost(navController, startDestination = Screen.Splash.name) {
+
                                 composable(
                                     route = Screen.Splash.name,
                                     enterTransition = { fadeIn() },
@@ -128,6 +165,7 @@ class MainActivity : ComponentActivity() {
                                         userHasAccess = userHasAccess
                                     )
                                 }
+
                                 composable(
                                     Screen.Login.name,
                                     enterTransition = { fadeIn() },
@@ -145,6 +183,7 @@ class MainActivity : ComponentActivity() {
                                         },
                                     )
                                 }
+
                                 composable(
                                     route = Home.route,
                                     enterTransition = pageEnterTransition(),
@@ -157,20 +196,26 @@ class MainActivity : ComponentActivity() {
                                         loadingState = feedViewModel.feedLoadingState,
                                         updateVoteStatus = feedViewModel::voteStatusUpdated,
                                         subredditSelected = feedViewModel::subredditSelected,
-                                        expandMedia = { post ->
-                                            expandedMedia = post
+                                        expandMedia = { clickedMedia ->
+                                            showExpanded = true
+                                            expandedMedia = clickedMedia
                                         },
+                                        expandedMedia = expandedMedia,
                                         updateTopVisibleItems = feedViewModel::updateVisibleItems,
                                         gifExoPlayers = feedViewModel.gifExoPlayers
                                     )
                                 }
+
                                 composable(
                                     route = Account.route,
                                     enterTransition = pageEnterTransition(),
                                     exitTransition = pageExitTransition()
                                 ) {
-                                    Text("TODO FIX ME FIX ME PLS")
+                                    Text(
+                                        modifier = Modifier.fillMaxSize(),
+                                        text = "TODO FIX ME FIX ME PLS")
                                 }
+
                                 composable(
                                     Settings.route,
                                     enterTransition = pageEnterTransition(),
@@ -184,13 +229,14 @@ class MainActivity : ComponentActivity() {
                                         }
                                     )
                                 }
-
                             }
                         }
                     }
                 }
-                ExpandedMediaScreen(post = expandedMedia) {
+                ExpandedMediaScreen(showExpanded = showExpanded, expandedMedia = expandedMedia) {
+                    feedViewModel.gifExoPlayers.clear()
                     expandedMedia = null
+                    showExpanded = false
                 }
             }
         }
@@ -221,14 +267,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun pageEnterTransition(): (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
-        scaleIn(initialScale = 0.75f) +
-        slideInVertically(initialOffsetY = { (it * 0.9f).toInt() }) +
-        fadeIn(animationSpec = tween(500))
+        slideInVertically(initialOffsetY = { (it * 0.1f).toInt() }) +
+        fadeIn(animationSpec = tween(200))
     }
 
     private fun pageExitTransition(): (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
-        scaleOut(targetScale = 0.75f) +
-        slideOutVertically(targetOffsetY = { it }) +
+        scaleOut(
+            animationSpec = tween(200),
+            targetScale = 0.6f
+        )
         fadeOut(animationSpec = tween(200))
     }
 }
