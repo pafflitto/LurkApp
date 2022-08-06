@@ -1,11 +1,8 @@
 package com.example.lurk.screens.feed.post_views
 
 import android.view.LayoutInflater
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +32,7 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun GifPostView(
     post: GifPost,
@@ -145,7 +143,11 @@ fun GifPostView(
                 .align(Alignment.BottomCenter)
         )
 
-        if (showBlank) {
+        AnimatedVisibility(
+            visible = showBlank,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Box(
                 Modifier
                     .background(color = MaterialTheme.colorScheme.primaryContainer)

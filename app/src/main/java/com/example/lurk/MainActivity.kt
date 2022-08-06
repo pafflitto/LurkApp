@@ -234,7 +234,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 ExpandedMediaScreen(showExpanded = showExpanded, expandedMedia = expandedMedia) {
-                    feedViewModel.gifExoPlayers.clear()
                     expandedMedia = null
                     showExpanded = false
                 }
