@@ -150,7 +150,7 @@ fun GifPostView(
         ) {
             Box(
                 Modifier
-                    .background(color = MaterialTheme.colorScheme.primaryContainer)
+                    .background(color = MaterialTheme.colorScheme.background)
                     .fillMaxWidth()
                     .height(gifHeight)
             )
