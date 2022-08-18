@@ -47,7 +47,7 @@ fun PostView(
         onClick = {}
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             RedditTitle(
                 post = post,
