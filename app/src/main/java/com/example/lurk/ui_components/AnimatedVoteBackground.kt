@@ -38,7 +38,7 @@ fun AnimatedVoteBackground(
         ) {
             Spacer(modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
             )
         }
         AnimatedVisibility(
@@ -56,7 +56,7 @@ fun AnimatedVoteBackground(
         ) {
             Spacer(modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.tertiaryContainer)
+                .background(color = MaterialTheme.colorScheme.errorContainer)
             )
         }
     }

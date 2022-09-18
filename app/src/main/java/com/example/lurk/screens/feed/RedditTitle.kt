@@ -24,7 +24,7 @@ fun RedditTitle(
     ) {
         Text(
             text = post.title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(4.dp))

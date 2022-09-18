@@ -48,16 +48,16 @@ fun FeedScreen(
     expandedMedia: ExpandedMedia? = null,
     gifExoPlayers: SnapshotStateMap<String, ExoPlayer>,
     updateTopVisibleItems: (Map<Pair<String, Boolean>, String>) -> Unit
-)
-{
-    val smallTitle by remember { derivedStateOf {
-        listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset > 0
-    }}
+) {
+    val smallTitle by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset > 0
+        }
+    }
     val subredditTextSize by animateFloatAsState(
         if (smallTitle) {
             24f
-        }
-        else {
+        } else {
             MaterialTheme.typography.displaySmall.fontSize.value
         },
         animationSpec = tween(300)
@@ -104,7 +104,7 @@ private fun Posts(
     subredditSelected: (String) -> Unit,
     gifExoPlayers: Map<String, ExoPlayer>,
     updateTopVisibleItems: (Map<Pair<String, Boolean>, String>) -> Unit,
-    ) {
+) {
 
     val centerDisplayRange = with(LocalDensity.current) {
         val screenHeight = LocalConfiguration.current.screenHeightDp.dp.toPx()
@@ -132,22 +132,24 @@ private fun Posts(
                 if (visibleItems.isNotEmpty()) {
                     // Get items with a padding of two to load into the map.
                     // This will load gifs that are about to come onto the screen
-                    val firstItemIndex = if (visibleItems.first().index - 5 < 0) 0 else visibleItems.first().index - 5
+                    val firstItemIndex =
+                        if (visibleItems.first().index - 5 < 0) 0 else visibleItems.first().index - 5
                     val itemsToLoad = firstItemIndex until visibleItems.last().index + 2
 
                     // Create the map to send to the exoplayer map that will load these items
-                    val gifMap = visibleItems.filter { itemsToLoad.contains(it.index) }.mapNotNull { item ->
-                        posts[item.index]?.let { post ->
-                            if (post is GifPost) {
-                                // Key is a pair, first is the index and second is if we should play the gif
-                                // We will only play a gif if the top or bottom of it is within 30% padding of the center of the display
-                                val itemRange = item.offset..(item.offset + item.size)
-                                val shouldPlay = itemRange.first <= centerDisplayRange.last && itemRange.last >= centerDisplayRange.first
-                                Pair(post.idForIndex(item.index), shouldPlay) to post.url
+                    val gifMap =
+                        visibleItems.filter { itemsToLoad.contains(it.index) }.mapNotNull { item ->
+                            posts[item.index]?.let { post ->
+                                if (post is GifPost) {
+                                    // Key is a pair, first is the index and second is if we should play the gif
+                                    // We will only play a gif if the top or bottom of it is within 30% padding of the center of the display
+                                    val itemRange = item.offset..(item.offset + item.size)
+                                    val shouldPlay =
+                                        itemRange.first <= centerDisplayRange.last && itemRange.last >= centerDisplayRange.first
+                                    Pair(post.idForIndex(item.index), shouldPlay) to post.url
+                                } else null
                             }
-                            else null
-                        }
-                    }.toMap()
+                        }.toMap()
                     updateTopVisibleItems(gifMap)
                 }
             }
@@ -155,7 +157,7 @@ private fun Posts(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(8.dp),
             state = listState
         ) {
@@ -183,13 +185,13 @@ private fun Posts(
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun FeedScreenPreviewDark()
-{
+fun FeedScreenPreviewDark() {
     LurkTheme(useDarkPreviewTheme = true) {
         Surface {
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 repeat(5)
                 {
                     PostView(post = Post.exampleTextPost, gifExoPlayers = emptyMap(), key = "")
@@ -201,13 +203,13 @@ fun FeedScreenPreviewDark()
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
 @Composable
-fun FeedScreenPreviewLight()
-{
+fun FeedScreenPreviewLight() {
     LurkTheme(useDarkPreviewTheme = false) {
         Surface {
             Column(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 repeat(5)
                 {
                     PostView(post = Post.exampleTextPost, gifExoPlayers = emptyMap(), key = "")

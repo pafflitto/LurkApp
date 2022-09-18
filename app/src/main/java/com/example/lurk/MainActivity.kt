@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
         // Pick our starting screen
         setContent {
             val controller = rememberSystemUiController()
-            LurkTheme {
+            LurkTheme(false, null) {
                 val navController = rememberAnimatedNavController()
                 val scope = rememberCoroutineScope()
                 val hapticFeedback = LocalHapticFeedback.current

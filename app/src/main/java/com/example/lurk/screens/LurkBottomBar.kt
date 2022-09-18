@@ -1,11 +1,14 @@
 package com.example.lurk.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
@@ -20,8 +23,18 @@ fun LurkBottomBar(
 ) {
     val currentRoute = navBackStackEntry?.destination?.route
     NavigationBar(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = MaterialTheme.colorScheme.surface,
+        modifier = Modifier
+            .background(
+                brush = Brush.verticalGradient(
+                    listOf(
+                        Color.Transparent,
+                        MaterialTheme.colorScheme.surface.copy(0.33f)
+                    )
+                )
+            )
+            .fillMaxWidth(),
+        contentColor = Color.Transparent,
+        containerColor = Color.Transparent,
         tonalElevation = 0.dp
     ) {
         NavBarItem.values().forEachIndexed { index, item ->
@@ -32,8 +45,8 @@ fun LurkBottomBar(
             var longPress by remember { mutableStateOf(false) }
 
             LaunchedEffect(pressed) {
-                delay(400)
-                if (pressed) {
+                delay(200)
+                if (pressed && currentRoute == NavBarItem.Home.route) {
                     longPress = true
                     longClick(item)
                 }

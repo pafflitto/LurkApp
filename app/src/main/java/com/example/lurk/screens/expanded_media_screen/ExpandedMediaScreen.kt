@@ -29,6 +29,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
 import com.example.lurk.screens.feed.GifPost
 import com.example.lurk.screens.feed.ImagePost
+import com.example.lurk.ui_components.PlayerView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.android.exoplayer2.ui.StyledPlayerView
 
@@ -86,18 +87,22 @@ fun ExpandedMediaScreen(
                 is GifPost -> {
                     var playerView by remember { mutableStateOf<StyledPlayerView?>(null) }
                     val context = LocalContext.current
-                    AndroidView(modifier = Modifier
-                        .fillMaxSize()
-                        .align(Alignment.Center),
-                        factory = {
-                            val layout = LayoutInflater.from(context).inflate(R.layout.playerview, null, false)
-                            playerView = layout.findViewById(R.id.player_view)
-                            playerView?.apply {
-                               player = expandedMedia.exoPlayer
+                    Box {
+                        AndroidView(modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.Center),
+                            factory = {
+                                val layout = LayoutInflater.from(context)
+                                    .inflate(R.layout.playerview, null, false)
+                                playerView = layout.findViewById(R.id.player_view)
+                                playerView?.apply {
+                                    player = expandedMedia.exoPlayer
+                                }
+                                playerView!!
                             }
-                            playerView!!
-                        }
-                    )
+                        )
+                        PlayerView(Modifier.align(Alignment.BottomCenter))
+                    }
                 }
             }
         }

@@ -25,7 +25,7 @@ fun MainPageScreen(
             fontSize = titleFontSize,
             fontWeight = FontWeight.ExtraBold,
             modifier = Modifier
-                .padding(top = 16.dp, bottom = 8.dp, start = 16.dp),
+                .padding(top = 0.dp, bottom = 8.dp, start = 16.dp),
             textAlign = TextAlign.Start
         )
 

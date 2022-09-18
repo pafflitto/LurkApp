@@ -2,7 +2,9 @@ package com.example.lurk.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -12,7 +14,6 @@ import com.google.android.material.color.ColorRoles
 import com.google.android.material.color.MaterialColors
 
 private val LightThemeColors = lightColorScheme(
-
 	primary = md_theme_light_primary,
 	onPrimary = md_theme_light_onPrimary,
 	primaryContainer = md_theme_light_primaryContainer,
@@ -41,7 +42,6 @@ private val LightThemeColors = lightColorScheme(
 	inversePrimary = md_theme_light_inversePrimary,
 )
 private val DarkThemeColors = darkColorScheme(
-
 	primary = md_theme_dark_primary,
 	onPrimary = md_theme_dark_onPrimary,
 	primaryContainer = md_theme_dark_primaryContainer,
@@ -86,75 +86,38 @@ fun setupErrorColors(colorScheme: ColorScheme, isLight: Boolean): ColorScheme {
     )
 }
 
-val initializeExtended = ExtendedColors(
-	arrayOf(
-	)
-)
-
-fun setupCustomColors(
-    colorScheme: ColorScheme,
-    isLight: Boolean
-): ExtendedColors {
-    initializeExtended.colors.forEach { customColor ->
-        // Retrieve record
-        val shouldHarmonize = customColor.harmonized
-        // Blend or not
-        if (shouldHarmonize) {
-            val blendedColor = MaterialColors.harmonize(customColor.color.toArgb(), colorScheme.primary.toArgb())
-            customColor.roles = MaterialColors.getColorRoles(blendedColor, isLight)
-        } else {
-            customColor.roles = MaterialColors.getColorRoles(customColor.color.toArgb(), isLight)
-        }
-    }
-    return initializeExtended
-}
-
-val LocalExtendedColors = staticCompositionLocalOf {
-    initializeExtended
-}
-
-
 @Composable
 fun LurkTheme(
+	playerView: Boolean = false,
 	useDarkPreviewTheme: Boolean? = null,
     content: @Composable () -> Unit
 ) {
+	val context = LocalContext.current
 	val preferredTheme by userPrefDataStore.userThemeFlow.collectAsState()
 
-	val context = LocalContext.current
-
-	var colors = when (preferredTheme) {
-		UserTheme.Auto -> if (isSystemInDarkTheme()) DarkThemeColors else LightThemeColors
-		UserTheme.Dark -> DarkThemeColors
-		UserTheme.Light -> LightThemeColors
-		UserTheme.MaterialYou -> {
-			if (isSystemInDarkTheme()) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+	val colors = when {
+		useDarkPreviewTheme != null -> if (useDarkPreviewTheme) DarkThemeColors else LightThemeColors
+		playerView -> if (preferredTheme == UserTheme.MaterialYou) dynamicDarkColorScheme(context) else DarkThemeColors
+		else -> when (preferredTheme) {
+			UserTheme.Auto -> if (isSystemInDarkTheme()) DarkThemeColors else LightThemeColors
+			UserTheme.Dark -> DarkThemeColors
+			UserTheme.Light -> LightThemeColors
+			UserTheme.MaterialYou -> {
+				if (isSystemInDarkTheme()) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
+					context
+				)
+			}
 		}
 	}
 
-	// For previews only
-	useDarkPreviewTheme?.let {
-		colors = if (it) DarkThemeColors else LightThemeColors
-	}
-
-	val useDarkTheme = colors == DarkThemeColors || colors == dynamicDarkColorScheme(context)
-    val extendedColors = setupCustomColors(colors, !useDarkTheme)
-    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
-        MaterialTheme(
-            colorScheme = colors,
-            typography = AppTypography,
-            content = content
-        )
-    }
+	MaterialTheme(
+		colorScheme = colors,
+		typography = AppTypography,
+		content = content
+	)
 }
 
 object Extended {
-//	val UpvoteColor: ColorRoles
-//		@Composable
-//		get() = LocalExtendedColors.current.colors[0].roles
-//	val DownvoteColor: ColorRoles
-//		@Composable
-//		get() = LocalExtendedColors.current.colors[1].roles
 	val PostBackgroundColor: Color
 		@Composable
 		get() {

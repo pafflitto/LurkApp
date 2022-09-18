@@ -31,8 +31,8 @@ fun Footer(
 ) {
     val itemColor by animateColorAsState(
         when(voted) {
-            Voted.UpVoted -> MaterialTheme.colorScheme.onSecondaryContainer
-            Voted.DownVoted -> MaterialTheme.colorScheme.onTertiaryContainer
+            Voted.UpVoted -> MaterialTheme.colorScheme.onPrimaryContainer
+            Voted.DownVoted -> MaterialTheme.colorScheme.onErrorContainer
             else -> MaterialTheme.colorScheme.onSurface
         }
     )
