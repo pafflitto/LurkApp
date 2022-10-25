@@ -3,14 +3,11 @@ package com.example.lurk.screens.feed
 import PostData
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import coil.request.ImageRequest
-import com.example.lurk.LurkApplication
-import com.example.lurk.LurkApplication.Companion.imageLoader
-import com.example.lurk.format
+import com.example.lurk.extensions.format
 import com.example.lurk.screens.feed.Post.Companion.PostType.*
 import kotlin.math.round
 
-open class Post(private val data: PostData)
+open class Post(data: PostData)
 {
     val id: String = data.id
     val title: String = data.title
@@ -72,7 +69,9 @@ open class Post(private val data: PostData)
         /**
          * Function that creates an instance of a post with respect to its type
          */
-        fun build(data: PostData): Post {
+        fun build(
+            data: PostData,
+        ): Post {
             return when(getType(data)) {
                 IMAGE -> ImagePost(data)
                 TEXT -> TextPost(data)
@@ -115,13 +114,10 @@ class TextPost(
 }
 
 class ImagePost(
-    data: PostData
+    data: PostData,
 ): Post(data = data) {
-    private val url: String = data.url // URL for post
+    val url: String = data.url // URL for post
     var image: Drawable? = null
-    suspend fun loadImage() {
-        image = imageLoader.execute(ImageRequest.Builder(LurkApplication.appContext).data(url).build()).drawable
-    }
 }
 
 class GifPost(
@@ -149,10 +145,6 @@ class GifPost(
         else -> data.url
     }
 
-    private val thumbnailUrl = data.preview.images.firstOrNull()?.resolutions?.maxByOrNull { it.width }?.url?.replace("amp;", "")
+    val thumbnailUrl = data.preview.images.firstOrNull()?.resolutions?.maxByOrNull { it.width }?.url?.replace("amp;", "")
     var thumbnail: Drawable? = null
-
-    suspend fun loadThumbnail() {
-        thumbnail = imageLoader.execute(ImageRequest.Builder(LurkApplication.appContext).data(thumbnailUrl).build()).drawable
-    }
 }

@@ -1,56 +1,95 @@
 package com.example.lurk.repositories
 
-import ListingResponse
-import com.example.lurk.*
-import com.example.lurk.retrofit_clients.RedditClient
-import com.example.lurk.retrofit_clients.handleRequest
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.example.lurk.RedditImageLoader
+import com.example.lurk.api.RedditApi
+import com.example.lurk.datastores.UserPreferencesDataStore
+import com.example.lurk.extensions.toTitleCase
+import com.example.lurk.screens.feed.Post
+import com.example.lurk.viewmodels.SortingType
 import com.example.lurk.viewmodels.UserSubreddit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 
+interface RedditRepo : Repo {
+    suspend fun getSubreddit(
+        subreddit: String,
+        scope: CoroutineScope
+    ): Result<Feed>
+    suspend fun subredditSearch(query: String): Result<List<String>>
+    suspend fun userSubreddits(): Result<Map<String, List<UserSubreddit>>>
+    suspend fun toggleFavoriteSubreddit(subreddit: String, shouldSave: Boolean)
+}
 /**
  * Repository to handle the content calls to Reddit's api
  */
-class RedditRepo {
+class RedditRepoImpl(
+    private val redditApi: RedditApi,
+    private val authRepo: RedditAuthRepo,
+    private val userPreferencesDataStore: UserPreferencesDataStore,
+    private val imageLoader: RedditImageLoader
+) : RedditRepo {
 
-    private val redditClient = RedditClient.webservice
-    private val authManager = LurkApplication.instance().authManager
-    private val prefManager = LurkApplication.instance().authPrefDataStore
+    inner class PagingLocation(
+        val before: String?,
+        val after: String?
+    )
 
-    // TODO RETURN ERRORS AND HANDLE THOSE BAD BOYS
-    suspend fun requestSubreddit(
-        subreddit: String?,
-        after: String?,
-        before: String?
-    ): ListingResponse? {
-        if (!authManager.userHasAccess.value) return null
+    override suspend fun getSubreddit(
+        subreddit: String,
+        scope: CoroutineScope
+    ): Result<Feed> {
+        var failure: Throwable? = null
+        val source = RedditPagingSource(
+            subreddit = subreddit,
+            imageLoader = imageLoader,
+            scope = scope ,
+            apiCall = { before, after ->
+                apiCall(authRepo) {
+                    redditApi.subredditRequest(
+                        headerMap = getAuthHeader(),
+                        subreddit = subreddit,
+                        before = before,
+                        after = after
+                    )
+                }
+            },
+            apiFailure = {
+                failure = it
+            }
+        )
 
-        var result: ListingResponse? = null
-        handleRequest {
-            redditClient.subredditRequest(authHeader, subreddit ?: "popular", after, before)
-        }.onSuccess { response ->
-            result = response
-        }
+        val postsFlow = Pager(
+            config = PagingConfig(pageSize = 50),
+            pagingSourceFactory = { source }
+        ).flow.cachedIn(scope)
 
-        return result
+        return failure?.let { Result.failure(it) } ?: Result.success(Feed(subreddit.toTitleCase(), postsFlow))
     }
 
-    suspend fun getUserSubreddits(): Map<String, List<UserSubreddit>>? {
-        if (!authManager.userHasAccess.value) return null
+    override suspend fun subredditSearch(query: String): Result<List<String>> = apiCall(authRepo) {
+            redditApi.subredditSearch(getAuthHeader(), query).subreddits.map { it.name.toTitleCase() }
+    }
 
-        var result: Map<String, List<UserSubreddit>> = emptyMap()
-        handleRequest {
-            if (authDataStore.oUserSignedIn.value) {
-                redditClient.userSubreddits(authHeader)
+    override suspend fun userSubreddits(): Result<Map<String, List<UserSubreddit>>> {
+        apiCall(authRepo) {
+            if (authRepo.getUserAccountType() is AccountType.SignedInUser) {
+                redditApi.userSubreddits(getAuthHeader())
             } else {
-                redditClient.userlessSubreddits(authHeader)
+                redditApi.userlessSubreddits(getAuthHeader())
             }
         }.onSuccess { response ->
-            val favoriteSubreddits = userPrefDataStore.favoriteSubredditFlow.value
+            val favoriteSubreddits = userPreferencesDataStore.favoriteSubredditFlow.value
 
             // overall map of all subreddits shown in the list
             val subredditMap = linkedMapOf<String, List<UserSubreddit>>()
 
             // Add General subreddits
-            subredditMap[""] = listOf(UserSubreddit("Popular", null), UserSubreddit("Home", null))
+            subredditMap[""] =
+                listOf(UserSubreddit("Popular", null), UserSubreddit("Home", null))
 
             // List of favorite UserSubreddit objects
             val favSubredditList = mutableListOf<UserSubreddit>()
@@ -58,7 +97,8 @@ class RedditRepo {
             // convert the http response to UserSubreddits and update the favSubreddit list
             val userSubreddits = response.data.children.map {
                 val url = it.data.url
-                val displayName = url.substring(3, url.length - 1).replaceFirstChar(Char::titlecase)
+                val displayName =
+                    url.substring(3, url.length - 1).replaceFirstChar(Char::titlecase)
                 val isFavorite = favoriteSubreddits.contains(displayName.lowercase())
 
                 val userSubreddit = UserSubreddit(name = displayName, favorited = isFavorite)
@@ -76,26 +116,26 @@ class RedditRepo {
 
             subredditMap.putAll(userSubreddits)
 
-            result = subredditMap
+            return Result.success(subredditMap)
+        }.onFailure {
+            return Result.failure(it)
         }
 
-        return result
+        return Result.failure(Throwable("Unexpected Error"))
     }
 
-    suspend fun subredditSearch(query: String): List<String> {
-        var result = emptyList<String>()
-        handleRequest {
-            redditClient.subredditSearch(authHeader, query).subreddits.map { it.name.toTitleCase() }
-        }.onSuccess { response ->
-            result = response
-        }
-        return result
-    }
+    override suspend fun toggleFavoriteSubreddit(subreddit: String, shouldSave: Boolean) = userPreferencesDataStore
+        .saveRemoveFavoriteSubreddit(subreddit = subreddit, shouldSave = true)
 
-    private val authHeader: HashMap<String, String> get() {
-        return hashMapOf(
-            "User-Agent" to "Lurk for Reddit",
-            "Authorization" to "Bearer ".plus(prefManager.oAccessToken.value)
-        )
-    }
+
+    private suspend fun getAuthHeader(): HashMap<String, String> = hashMapOf(
+        "User-Agent" to "Lurk for Reddit",
+        "Authorization" to "Bearer ".plus(authRepo.getAccessToken())
+    )
 }
+
+data class Feed(
+    val subreddit: String,
+    val postFlow: Flow<PagingData<Post>>,
+    val sortingType: SortingType = SortingType.BEST
+)

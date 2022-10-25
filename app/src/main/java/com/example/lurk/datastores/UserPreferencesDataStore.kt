@@ -6,18 +6,22 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.lurk.viewmodels.UserTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 
 /**
  * Datastore to hold the User's selected preferences.
  * For example, the theme and their favorite subreddits
  */
-class UserPreferencesDataStore(private val context: Context) {
+@OptIn(ExperimentalCoroutinesApi::class)
+class UserPreferencesDataStore(
+    private val context: Context
+) {
 
     private val Context.userPrefDataStore by preferencesDataStore(name = USER_PREFS)
-    private val coroutineScope = GlobalScope
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     companion object {
         private const val USER_PREFS = "USER_PREFS"

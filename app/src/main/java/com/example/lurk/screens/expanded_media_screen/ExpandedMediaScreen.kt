@@ -1,13 +1,10 @@
 package com.example.lurk.screens.expanded_media_screen
 
 import android.view.LayoutInflater
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -27,12 +24,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
+import com.example.lurk.extensions.noIndicationClick
 import com.example.lurk.screens.feed.GifPost
 import com.example.lurk.screens.feed.ImagePost
 import com.example.lurk.ui_components.PlayerView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.android.exoplayer2.ui.StyledPlayerView
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ExpandedMediaScreen(
     showExpanded: Boolean = false,
@@ -86,8 +85,10 @@ fun ExpandedMediaScreen(
                 }
                 is GifPost -> {
                     var playerView by remember { mutableStateOf<StyledPlayerView?>(null) }
+                    var showPlayerView by remember { mutableStateOf(false) }
                     val context = LocalContext.current
-                    Box {
+
+                    Box(Modifier.noIndicationClick { showPlayerView = !showPlayerView }) {
                         AndroidView(modifier = Modifier
                             .fillMaxSize()
                             .align(Alignment.Center),
@@ -101,7 +102,20 @@ fun ExpandedMediaScreen(
                                 playerView!!
                             }
                         )
-                        PlayerView(Modifier.align(Alignment.BottomCenter))
+                        AnimatedVisibility(
+                            visible = showPlayerView,
+                            enter = scaleIn() + slideInVertically(
+                                initialOffsetY = { it }
+                            ),
+                            exit = scaleOut() + slideOutVertically(
+                                targetOffsetY = { it }
+                            ),
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        ) {
+                            PlayerView(
+                                exoPlayer = expandedMedia.exoPlayer
+                            )
+                        }
                     }
                 }
             }

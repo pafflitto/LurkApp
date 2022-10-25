@@ -38,7 +38,7 @@ fun PostView(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = Extended.PostBackgroundColor
+            containerColor = Extended.getPostBackgroundColor()
         ),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = if (post.clicked) 0.dp else 4.dp,

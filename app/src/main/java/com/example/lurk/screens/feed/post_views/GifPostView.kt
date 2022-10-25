@@ -1,11 +1,16 @@
 package com.example.lurk.screens.feed.post_views
 
+import android.util.Log
 import android.view.LayoutInflater
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,22 +22,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
+import com.example.lurk.extensions.MonitorProgressUpdates
 import com.example.lurk.screens.expanded_media_screen.ExpandedMedia
 import com.example.lurk.screens.feed.GifPost
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
-import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun GifPostView(
     post: GifPost,
@@ -40,31 +47,15 @@ fun GifPostView(
     expandMedia: (ExpandedMedia) -> Unit = {},
     showBlank: Boolean
 ) {
-    var progress by remember { mutableStateOf(0f) }
-    var isDragging by remember { mutableStateOf(false) }
-    val animatedProgress by animateFloatAsState(progress)
+    val progress = remember { mutableStateOf(0f) }
+    val isDragging = remember { mutableStateOf(false) }
+    val animatedProgress by animateFloatAsState(progress.value)
     val context = LocalContext.current
     val density = LocalDensity.current
 
     var gifHeight by remember { mutableStateOf(0.dp) }
 
-    exoPlayer?.let {
-        LaunchedEffect(Unit) {
-            while (true) {
-                if (exoPlayer.playbackState == Player.STATE_READY && !isDragging) {
-                    var loopDelay = 0f
-                    loopDelay = 20 - (progress % 20)
-                    if (loopDelay < 0) {
-                        loopDelay += 20
-                    }
-
-                    progress = exoPlayer.currentPosition / exoPlayer.duration.toFloat()
-                    delay(loopDelay.toLong())
-                }
-                else delay(500)
-            }
-        }
-    }
+    exoPlayer.MonitorProgressUpdates(progress = progress, isDragging = isDragging)
 
     Box(
         Modifier
@@ -72,6 +63,7 @@ fun GifPostView(
             .heightIn(0.dp, 500.dp)
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
+            .clipToBounds()
     ) {
         Image(
             painter = rememberDrawablePainter(drawable = post.thumbnail),
@@ -91,32 +83,34 @@ fun GifPostView(
             exit = fadeOut(),
         ) {
             var playerView by remember { mutableStateOf<StyledPlayerView?>(null) }
+            val hapticFeedback = LocalHapticFeedback.current
             AndroidView(
                 modifier = Modifier
                     .height(gifHeight)
-//                        .pointerInput(Unit) {
-//                            detectHorizontalDragGestures(
-//                                onDragEnd = {
-//                                    isDragging = false
-//                                    exoPlayer?.play()
-//                                },
-//                                onDragStart = {
-//                                    exoPlayer?.pause()
-//                                },
-//                                onHorizontalDrag = { _, dragAmount ->
-//                                    isDragging = true
-//                                    val dragAmountTranslated = dragAmount / 1000
-//                                    progress += dragAmountTranslated
-//                                    exoPlayer?.seekTo(progress.toLong() * exoPlayer.duration)
-//                                }
-//                            )
-//                            detectTapGestures {
-//                                if (exoPlayer != null) {
-//                                    playerView?.player = null
-//                                    expandMedia(post, exoPlayer)
-//                                }
-//                            }
-//                        }
+                    .pointerInput(Unit) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                exoPlayer?.pause()
+                                isDragging.value = true
+                            },
+                            onDragEnd = {
+                                Log.e("DRAG", "Drag End")
+                                exoPlayer?.play()
+                                isDragging.value = false
+                            },
+                            onDragCancel = {
+                                Log.e("DRAG", "Drag Cancel")
+                                exoPlayer?.play()
+                                isDragging.value = false
+                            },
+                            onDrag = { change, dragAmount ->
+                                progress.value += dragAmount.x / 1000
+                                val newProgress = (exoPlayer?.duration ?: 1L) * progress.value
+                                exoPlayer?.seekTo(newProgress.toLong())
+                            }
+                        )
+                    }
                     .clickable {
                         exoPlayer?.let {
                             expandMedia(ExpandedMedia(post = post, exoPlayer = it))

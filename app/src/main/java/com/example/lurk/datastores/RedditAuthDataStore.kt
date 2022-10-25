@@ -7,9 +7,9 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.lurk.api.responses.AuthResponse
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.*
 import java.util.*
 
@@ -21,7 +21,7 @@ import java.util.*
 class RedditAuthDataStore(private val context: Context) {
 
     private val Context.authDataStore by preferencesDataStore(name = AUTH_PREFERENCES)
-    private val coroutineScope = GlobalScope
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     companion object {
         private const val AUTH_PREFERENCES = "auth_preferences"

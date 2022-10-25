@@ -1,22 +1,76 @@
-package com.example.lurk.screens
+package com.example.lurk.ui_components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
-import com.example.lurk.ui_components.NavBarItem
+import androidx.navigation.NavController
+import com.example.lurk.viewmodels.LoginViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun LurkBottomBar(
+    navBackStackEntry: NavBackStackEntry?,
+    navController: NavController,
+    feedListState: LazyListState,
+    openDrawer: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel()
+) {
+    val hasAccess by viewModel.hasAccess.collectAsState()
+    val scope = rememberCoroutineScope()
+    val hapticFeedback = LocalHapticFeedback.current
+
+    AnimatedVisibility(
+        visible = hasAccess,
+        enter = slideInVertically(initialOffsetY = { it / 2 }),
+        exit = fadeOut()
+    ) {
+        LurkBottomBarContent(
+            navBackStackEntry = navBackStackEntry,
+            navItemClick = { item ->
+                navController.backQueue.clear()
+
+                when {
+                    item == NavBarItem.Home && item.route == navBackStackEntry?.destination?.route -> {
+                        scope.launch {
+                            feedListState.animateScrollToItem(0)
+                        }
+                    }
+                    else -> {
+                        navController.navigate(item.route)
+                    }
+                }
+            },
+            longClick = { item ->
+                if (item == NavBarItem.Home) {
+                    hapticFeedback.performHapticFeedback(
+                        HapticFeedbackType.LongPress
+                    )
+                    openDrawer()
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun LurkBottomBarContent(
     navBackStackEntry: NavBackStackEntry?,
     navItemClick: (item: NavBarItem) -> Unit,
     longClick: (item: NavBarItem) -> Unit,

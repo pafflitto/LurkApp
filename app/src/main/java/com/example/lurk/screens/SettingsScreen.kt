@@ -1,5 +1,6 @@
 package com.example.lurk.screens
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -24,11 +25,39 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.lurk.viewmodels.UserTheme
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraphBuilder
 import com.example.lurk.ui_components.MainPageScreen
+import com.example.lurk.ui_components.NavBarItem
+import com.example.lurk.ui_components.pageEnterTransition
+import com.example.lurk.ui_components.pageExitTransition
+import com.example.lurk.viewmodels.UserSettingsViewModel
+import com.example.lurk.viewmodels.UserTheme
+import com.google.accompanist.navigation.animation.composable
+
+@OptIn(ExperimentalAnimationApi::class)
+fun NavGraphBuilder.settingsScreen() = composable(
+    NavBarItem.Settings.route,
+    enterTransition = pageEnterTransition(),
+    exitTransition = pageExitTransition()
+) {
+    SettingsScreen()
+}
 
 @Composable
-fun SettingsScreen(
+private fun SettingsScreen(
+    viewModel: UserSettingsViewModel = hiltViewModel()
+) {
+    val currentTheme by viewModel.userTheme.collectAsState()
+
+    SettingsScreenContent(
+        currentTheme = currentTheme,
+        themeSelected = viewModel::setUserTheme
+    )
+}
+
+@Composable
+private fun SettingsScreenContent(
     currentTheme: UserTheme,
     themeSelected: (UserTheme) -> Unit
 ) {
@@ -43,7 +72,7 @@ fun SettingsScreen(
             showOptions = { showOptions ->
                 showingOptions = showOptions
             }
-            ) { lazyListScope ->
+        ) { lazyListScope ->
             lazyListScope.itemsIndexed(UserTheme.values()) { index, item ->
                 SettingsOptionItem(
                     icon = item.icon,
@@ -85,7 +114,10 @@ private fun SettingsRow(
         Box {
             val alpha by animateFloatAsState(if (showingOptions) 0f else 1f)
             Row(
-                Modifier.alpha(alpha).padding(end = 16.dp).align(Alignment.Center),
+                Modifier
+                    .alpha(alpha)
+                    .padding(end = 16.dp)
+                    .align(Alignment.Center),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(

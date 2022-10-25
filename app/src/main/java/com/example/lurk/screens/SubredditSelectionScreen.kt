@@ -38,10 +38,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.lurk.R
+import com.example.lurk.viewmodels.FeedViewModel
 import com.example.lurk.viewmodels.UserSubreddit
 
 @Composable
 fun SubredditSelectionScreen(
+    viewModel: FeedViewModel,
+    closeDrawer: () -> Unit
+) {
+    val userSubreddits by viewModel.userSubredditsFlow.collectAsState()
+    val subreddit by viewModel.currentSubredditFlow.collectAsState()
+
+    SubredditSelectionScreenContent(
+        currentSubreddit = subreddit,
+        subreddits = userSubreddits,
+        subredditSearchText = viewModel.subredditSearchText,
+        subredditSearchTextChange = viewModel::searchForSubreddit,
+        subredditSearchResults = viewModel.subredditSearchResults,
+        subredditFavoriteToggle = viewModel::toggleFavoriteSubreddit,
+        subredditSelected = {
+            closeDrawer()
+            viewModel.clearSubredditSearchText()
+            viewModel.updateSubreddit(it)
+        }
+    )
+}
+
+@Composable
+fun SubredditSelectionScreenContent(
     currentSubreddit: String,
     subreddits: Map<String, List<UserSubreddit>>,
     subredditSearchText: String,

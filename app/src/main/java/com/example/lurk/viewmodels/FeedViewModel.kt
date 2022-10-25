@@ -1,120 +1,128 @@
 package com.example.lurk.viewmodels
 
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.DrawerValue
+import android.app.Application
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import com.example.lurk.LurkApplication
-import com.example.lurk.repositories.FeedSource
+import com.example.lurk.extensions.toTitleCase
+import com.example.lurk.repositories.Feed
 import com.example.lurk.repositories.RedditRepo
 import com.example.lurk.screens.feed.Post
-import com.example.lurk.toTitleCase
-import com.example.lurk.userPrefDataStore
 import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class FeedViewModel: ViewModel() {
-    private val repo = RedditRepo()
-    private val authManager = LurkApplication.instance().authManager
+@HiltViewModel
+class FeedViewModel @Inject constructor(
+    private val redditRepo: RedditRepo,
+    @ApplicationContext context: Context
+): AndroidViewModel(context as Application) {
     private val mutex = Mutex()
 
-    val feedListState = LazyListState()
-    var feedLoadingState by mutableStateOf(LoadingState.LOADED)
-    val subredditFlow = MutableStateFlow("Popular")
     val gifExoPlayers = mutableStateMapOf<String, ExoPlayer>()
 
-    val oFeed: StateFlow<Feed?> = combine(authManager.userHasAccess, subredditFlow) { hasAccess, subreddit ->
-        if (hasAccess) {
-            withContext(Dispatchers.Main) {
-                feedLoadingState = LoadingState.LOADED
-            }
-            val postsFlow = Pager(PagingConfig(pageSize = 50)) {
-                FeedSource(
-                    subreddit = subreddit,
-                    repo = repo,
-                    coroutineScope = viewModelScope
+    var subredditSearchText by mutableStateOf("")
+    var subredditSearchResults by mutableStateOf(emptyList<String>())
+
+    private val _feedState = MutableStateFlow<FeedState>(FeedState.Loading)
+    val feedStateFlow: StateFlow<FeedState> = _feedState
+
+    private val _userSubreddits = MutableStateFlow<Map<String, List<UserSubreddit>>>(emptyMap())
+    val userSubredditsFlow: StateFlow<Map<String, List<UserSubreddit>>> = _userSubreddits
+
+    private val _currentSubreddit = MutableStateFlow("Popular")
+    val currentSubredditFlow: StateFlow<String> = _currentSubreddit
+
+    private fun buildExoPlayer(url: String) = ExoPlayer.Builder(getApplication())
+        .setSeekForwardIncrementMs(5000)
+        .setSeekBackIncrementMs(5000)
+        .build().apply {
+            playWhenReady = false
+            repeatMode = Player.REPEAT_MODE_ALL
+            addMediaItem(MediaItem.fromUri(url))
+            prepare()
+        }
+
+    init {
+        updateSubreddit("popular")
+        updateSubreddits()
+    }
+
+    fun updateSubreddit(subreddit: String) = viewModelScope.launch {
+        _currentSubreddit.tryEmit(subreddit.toTitleCase())
+        _feedState.tryEmit(FeedState.Loading)
+        redditRepo.getSubreddit(
+            subreddit = subreddit,
+            scope = viewModelScope
+        ).onSuccess {
+            _feedState.tryEmit(
+                FeedState.Loaded(
+                    feed = it
                 )
-            }.flow.cachedIn(viewModelScope)
-            Feed(subreddit = subreddit.toTitleCase(), postFlow = postsFlow)
+            )
         }
-        else {
-            // TODO add in error loading state here and handle with responsibility!
-            null
-        }
-    }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    }
 
     fun updateVisibleItems(posts: Map<Pair<String, Boolean>, String>) {
         viewModelScope.launch(Dispatchers.IO) {
             if (posts.isNotEmpty()) {
                 mutex.withLock {
-                    gifExoPlayers.updateVisibleItems(posts)
+                    gifExoPlayers.updateVisibleItems(
+                        getDefaultPlayer = this@FeedViewModel::buildExoPlayer,
+                        items = posts
+                    )
                 }
             }
         }
     }
 
-    fun voteStatusUpdated(vote: Post.Companion.Voted) {
-
+    fun updateSubreddits() = viewModelScope.launch {
+        redditRepo.userSubreddits()
+            .onSuccess {
+                _userSubreddits.tryEmit(it)
+            }
     }
 
-    //region Subreddit Selector
-    var subredditSearchText by mutableStateOf("")
-    var subredditSearchResults by mutableStateOf(emptyList<String>())
-    private val _drawerState = MutableStateFlow(DrawerValue.Closed)
+    fun searchForSubreddit(query: String) = viewModelScope.launch {
+        subredditSearchText = query
+        redditRepo.subredditSearch(subredditSearchText).onSuccess {
+            subredditSearchResults = it
+        }
+    }
+
+    fun toggleFavoriteSubreddit(subreddit: String, currentlyFavorited: Boolean) = viewModelScope.launch {
+        redditRepo.toggleFavoriteSubreddit(subreddit, !currentlyFavorited)
+    }
 
     fun clearSubredditSearchText() {
         subredditSearchText = ""
         subredditSearchResults = emptyList()
     }
 
-    fun updateDrawerState(stateValue: DrawerValue) = viewModelScope.launch(Dispatchers.IO) {
-        _drawerState.value = stateValue
+    fun voteStatusUpdated(vote: Post.Companion.Voted) {
+
     }
 
-    fun subredditSelected(subreddit: String) = viewModelScope.launch(Dispatchers.IO) {
-        if (subreddit != oFeed.value?.subreddit) {
-            feedLoadingState = LoadingState.LOADING
-            subredditFlow.value = subreddit
-            withContext(Dispatchers.Main) {
-                feedListState.scrollToItem(0)
-            }
-        }
-    }
-
-    fun toggleFavoriteSubreddit(subreddit: String, currentlyFavorited: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            userPrefDataStore.saveRemoveFavoriteSubreddit(subreddit = subreddit.lowercase(), shouldSave = !currentlyFavorited)
-        }
-    }
-
-    val oUserSubreddits: StateFlow<Map<String, List<UserSubreddit>>> = _drawerState.mapLatest {
-        repo.getUserSubreddits() ?: emptyMap()
-    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
-
-    fun subredditSearchTextChange(text: String) {
-        subredditSearchText = text
-        viewModelScope.launch {
-            subredditSearchResults = repo.subredditSearch(subredditSearchText)
-        }
-    }
-
-    data class Feed(
-        val subreddit: String,
-        val postFlow: Flow<PagingData<Post>>,
-        val sortingType: SortingType = SortingType.BEST
-    )
     //endregion
+}
+
+sealed class FeedState {
+    object Loading : FeedState()
+    object Error : FeedState()
+    data class Loaded(
+        val feed : Feed
+    ) : FeedState()
 }

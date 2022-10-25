@@ -1,21 +1,14 @@
 package com.example.lurk.viewmodels
 
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import com.example.lurk.LurkApplication
 import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private fun getDefaultPlayer(url: String) = ExoPlayer.Builder(LurkApplication.appContext).build().apply {
-    playWhenReady = false
-    repeatMode = Player.REPEAT_MODE_ALL
-    addMediaItem(MediaItem.fromUri(url))
-    prepare()
-}
-
-suspend fun SnapshotStateMap<String, ExoPlayer>.updateVisibleItems(items: Map<Pair<String, Boolean>, String>) {
+suspend fun SnapshotStateMap<String, ExoPlayer>.updateVisibleItems(
+    getDefaultPlayer: (url: String) -> ExoPlayer,
+    items: Map<Pair<String, Boolean>, String>
+) {
     keys.forEach { activeIndex ->
         if (!items.keys.map { it.first }.contains(activeIndex)) {
             val player = this[activeIndex]

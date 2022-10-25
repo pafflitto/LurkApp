@@ -8,7 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import com.example.lurk.userPrefDataStore
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.lurk.viewmodels.UserSettingsViewModel
 import com.example.lurk.viewmodels.UserTheme
 import com.google.android.material.color.ColorRoles
 import com.google.android.material.color.MaterialColors
@@ -90,10 +91,11 @@ fun setupErrorColors(colorScheme: ColorScheme, isLight: Boolean): ColorScheme {
 fun LurkTheme(
 	playerView: Boolean = false,
 	useDarkPreviewTheme: Boolean? = null,
-    content: @Composable () -> Unit
+	viewModel: UserSettingsViewModel = hiltViewModel(),
+	content: @Composable () -> Unit
 ) {
 	val context = LocalContext.current
-	val preferredTheme by userPrefDataStore.userThemeFlow.collectAsState()
+	val preferredTheme by viewModel.userTheme.collectAsState()
 
 	val colors = when {
 		useDarkPreviewTheme != null -> if (useDarkPreviewTheme) DarkThemeColors else LightThemeColors
@@ -118,15 +120,16 @@ fun LurkTheme(
 }
 
 object Extended {
-	val PostBackgroundColor: Color
-		@Composable
-		get() {
-			val theme by userPrefDataStore.userThemeFlow.collectAsState()
-			return when (theme) {
-				UserTheme.Dark -> Color.Black
-				UserTheme.Light -> Color.White
-				UserTheme.MaterialYou -> if (isSystemInDarkTheme()) Color.Black else Color.White
-				UserTheme.Auto -> if (isSystemInDarkTheme()) Color.Black else Color.White
-			}
+	@Composable
+	fun getPostBackgroundColor(
+		userSettingsViewModel: UserSettingsViewModel = hiltViewModel()
+	): Color {
+		val theme by userSettingsViewModel.userTheme.collectAsState()
+		return when (theme) {
+			UserTheme.Dark -> Color.Black
+			UserTheme.Light -> Color.White
+			UserTheme.MaterialYou -> if (isSystemInDarkTheme()) Color.Black else Color.White
+			UserTheme.Auto -> if (isSystemInDarkTheme()) Color.Black else Color.White
 		}
+	}
 }
