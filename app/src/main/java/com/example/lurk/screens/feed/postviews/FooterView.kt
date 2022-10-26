@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.postviews
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.*
@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lurk.R
-import com.example.lurk.screens.feed.Post.Companion.Voted
+import com.example.lurk.screens.feed.postviews.Post.Companion.Voted
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui.components.AnimatedVoteBackground
 import com.example.lurk.ui.components.DownVoteButton

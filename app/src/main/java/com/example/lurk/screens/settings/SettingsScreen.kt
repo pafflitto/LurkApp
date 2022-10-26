@@ -31,8 +31,6 @@ import com.example.lurk.ui.components.MainPageScreen
 import com.example.lurk.ui.components.NavBarItem
 import com.example.lurk.ui.components.pageEnterTransition
 import com.example.lurk.ui.components.pageExitTransition
-import com.example.lurk.viewmodels.UserSettingsViewModel
-import com.example.lurk.viewmodels.UserTheme
 import com.google.accompanist.navigation.animation.composable
 
 @OptIn(ExperimentalAnimationApi::class)

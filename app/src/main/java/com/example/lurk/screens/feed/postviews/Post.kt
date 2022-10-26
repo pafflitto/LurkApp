@@ -1,10 +1,10 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.postviews
 
 import PostData
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import com.example.lurk.extensions.format
-import com.example.lurk.screens.feed.Post.Companion.PostType.*
+import com.example.lurk.screens.feed.postviews.Post.Companion.PostType.*
 import kotlin.math.round
 
 open class Post(data: PostData)

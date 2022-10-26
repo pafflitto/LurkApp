@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.postviews
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn

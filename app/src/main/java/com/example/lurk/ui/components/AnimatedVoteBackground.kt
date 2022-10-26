@@ -13,9 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.lurk.screens.feed.Post.Companion.Voted.*
+import com.example.lurk.screens.feed.postviews.Post.Companion.Voted.*
 import com.example.lurk.ui.theme.LurkTheme
-import com.example.lurk.screens.feed.Post.Companion as Post
+import com.example.lurk.screens.feed.postviews.Post.Companion as Post
 
 @Composable
 fun AnimatedVoteBackground(

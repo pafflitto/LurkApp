@@ -2,7 +2,7 @@
     ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class
 )
 
-package com.example.lurk.screens
+package com.example.lurk.screens.search
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
@@ -38,8 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.lurk.R
-import com.example.lurk.viewmodels.FeedViewModel
-import com.example.lurk.viewmodels.UserSubreddit
+import com.example.lurk.screens.feed.FeedViewModel
+import com.example.lurk.screens.login.UserSubreddit
 
 @Composable
 fun SubredditSelectionScreen(

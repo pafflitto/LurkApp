@@ -1,4 +1,4 @@
-package com.example.lurk.datastores
+package com.example.lurk.data.datastores
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import java.util.*
 
-@OptIn(DelicateCoroutinesApi::class)
 /**
  * Datastore to hold the Authentication values from the reddit api. The state flows containing the authentication parameters
  * are all application wide and flow on the GlobalScope

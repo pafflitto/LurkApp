@@ -1,11 +1,11 @@
-package com.example.lurk.datastores
+package com.example.lurk.data.datastores
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.lurk.viewmodels.UserTheme
+import com.example.lurk.screens.settings.UserTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

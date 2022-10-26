@@ -1,8 +1,8 @@
-package com.example.lurk.viewmodels
+package com.example.lurk.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lurk.repositories.RedditAuthRepo
+import com.example.lurk.data.repositories.RedditAuthRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow

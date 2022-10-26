@@ -1,4 +1,4 @@
-package com.example.lurk.screens
+package com.example.lurk.screens.login
 
 import android.content.Intent
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
@@ -30,8 +30,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import com.example.lurk.data.api.RedditApiConstants
 import com.example.lurk.extensions.bounceClick
+import com.example.lurk.screens.Screen
 import com.example.lurk.ui.theme.LurkTheme
-import com.example.lurk.viewmodels.LoginViewModel
 import com.google.accompanist.navigation.animation.composable
 
 // Navigation

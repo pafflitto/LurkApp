@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
 import com.example.lurk.extensions.noIndicationClick
-import com.example.lurk.screens.feed.GifPost
-import com.example.lurk.screens.feed.ImagePost
+import com.example.lurk.screens.feed.postviews.GifPost
+import com.example.lurk.screens.feed.postviews.ImagePost
 import com.example.lurk.ui.components.PlayerView
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.android.exoplayer2.ui.StyledPlayerView

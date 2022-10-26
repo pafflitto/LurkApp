@@ -1,4 +1,4 @@
-package com.example.lurk.repositories
+package com.example.lurk.data.repositories
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -6,11 +6,11 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.example.lurk.RedditImageLoader
 import com.example.lurk.data.api.RedditApi
-import com.example.lurk.datastores.UserPreferencesDataStore
+import com.example.lurk.data.datastores.UserPreferencesDataStore
 import com.example.lurk.extensions.toTitleCase
-import com.example.lurk.screens.feed.Post
-import com.example.lurk.viewmodels.SortingType
-import com.example.lurk.viewmodels.UserSubreddit
+import com.example.lurk.screens.feed.postviews.Post
+import com.example.lurk.screens.login.SortingType
+import com.example.lurk.screens.login.UserSubreddit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 

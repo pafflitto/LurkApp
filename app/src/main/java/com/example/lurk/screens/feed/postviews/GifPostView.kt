@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.postviews
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -35,7 +35,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.lurk.R
 import com.example.lurk.extensions.MonitorProgressUpdates
 import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMedia
-import com.example.lurk.screens.feed.GifPost
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ui.StyledPlayerView

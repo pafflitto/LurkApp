@@ -1,4 +1,4 @@
-package com.example.lurk.screens
+package com.example.lurk.screens.account
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize

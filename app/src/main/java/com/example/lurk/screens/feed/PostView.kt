@@ -10,7 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMedia
-import com.example.lurk.screens.feed.*
+import com.example.lurk.screens.feed.postviews.*
 import com.example.lurk.ui.theme.Extended
 import com.google.android.exoplayer2.ExoPlayer
 

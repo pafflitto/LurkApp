@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.lurk.data.api.RedditApiConstants
 import com.example.lurk.screens.*
+import com.example.lurk.screens.account.accountScreen
 import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMedia
 import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMediaScreen
 import com.example.lurk.screens.feed.feedScreen
@@ -29,8 +30,10 @@ import com.example.lurk.screens.settings.settingsScreen
 import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui.components.LurkBottomBar
 import com.example.lurk.ui.components.NavBarItem.Home
-import com.example.lurk.viewmodels.FeedViewModel
-import com.example.lurk.viewmodels.LoginViewModel
+import com.example.lurk.screens.feed.FeedViewModel
+import com.example.lurk.screens.login.loginScreen
+import com.example.lurk.screens.login.LoginViewModel
+import com.example.lurk.screens.search.SubredditSelectionScreen
 import com.gfycat.core.GfyCoreInitializationBuilder
 import com.gfycat.core.GfyCoreInitializer
 import com.gfycat.core.GfycatApplicationInfo

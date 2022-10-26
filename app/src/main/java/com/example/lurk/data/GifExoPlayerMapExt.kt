@@ -1,4 +1,4 @@
-package com.example.lurk.viewmodels
+package com.example.lurk.data
 
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import com.google.android.exoplayer2.ExoPlayer

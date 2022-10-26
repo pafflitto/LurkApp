@@ -1,4 +1,4 @@
-package com.example.lurk.viewmodels
+package com.example.lurk.screens.feed
 
 import android.app.Application
 import android.content.Context
@@ -8,10 +8,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lurk.data.repositories.Feed
+import com.example.lurk.data.repositories.RedditRepo
+import com.example.lurk.data.updateVisibleItems
 import com.example.lurk.extensions.toTitleCase
-import com.example.lurk.repositories.Feed
-import com.example.lurk.repositories.RedditRepo
-import com.example.lurk.screens.feed.Post
+import com.example.lurk.screens.feed.postviews.Post
+import com.example.lurk.screens.login.UserSubreddit
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player

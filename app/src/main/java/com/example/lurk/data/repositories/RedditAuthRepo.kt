@@ -1,10 +1,10 @@
-package com.example.lurk.repositories
+package com.example.lurk.data.repositories
 
 import android.util.Base64
 import com.example.lurk.BuildConfig
 import com.example.lurk.data.api.RedditAuthApi
 import com.example.lurk.data.api.responses.AuthResponse
-import com.example.lurk.datastores.RedditAuthDataStore
+import com.example.lurk.data.datastores.RedditAuthDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

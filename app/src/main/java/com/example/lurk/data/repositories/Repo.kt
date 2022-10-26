@@ -1,4 +1,4 @@
-package com.example.lurk.repositories
+package com.example.lurk.data.repositories
 
 import retrofit2.HttpException
 

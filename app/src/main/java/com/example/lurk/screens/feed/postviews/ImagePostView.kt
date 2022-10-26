@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.postviews
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -13,8 +13,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMedia
-import com.example.lurk.screens.feed.ImagePost
-import com.example.lurk.screens.feed.Post
 import com.example.lurk.ui.theme.LurkTheme
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
 

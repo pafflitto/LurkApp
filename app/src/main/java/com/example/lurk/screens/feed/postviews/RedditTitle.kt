@@ -1,4 +1,4 @@
-package com.example.lurk.screens.feed
+package com.example.lurk.screens.feed.postviews
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -9,8 +9,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.lurk.ui.theme.LurkTheme
 import com.example.lurk.ui.components.PillButton
+import com.example.lurk.ui.theme.LurkTheme
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

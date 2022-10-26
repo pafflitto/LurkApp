@@ -9,8 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.lurk.viewmodels.UserSettingsViewModel
-import com.example.lurk.viewmodels.UserTheme
+import com.example.lurk.screens.settings.UserSettingsViewModel
+import com.example.lurk.screens.settings.UserTheme
 import com.google.android.material.color.ColorRoles
 import com.google.android.material.color.MaterialColors
 
@@ -89,10 +89,10 @@ fun setupErrorColors(colorScheme: ColorScheme, isLight: Boolean): ColorScheme {
 
 @Composable
 fun LurkTheme(
-	playerView: Boolean = false,
-	useDarkPreviewTheme: Boolean? = null,
-	viewModel: UserSettingsViewModel = hiltViewModel(),
-	content: @Composable () -> Unit
+    playerView: Boolean = false,
+    useDarkPreviewTheme: Boolean? = null,
+    viewModel: UserSettingsViewModel = hiltViewModel(),
+    content: @Composable () -> Unit
 ) {
 	val context = LocalContext.current
 	val preferredTheme by viewModel.userTheme.collectAsState()

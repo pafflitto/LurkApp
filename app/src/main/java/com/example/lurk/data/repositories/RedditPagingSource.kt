@@ -1,12 +1,12 @@
-package com.example.lurk.repositories
+package com.example.lurk.data.repositories
 
 import ListingResponse
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.lurk.RedditImageLoader
-import com.example.lurk.screens.feed.GifPost
-import com.example.lurk.screens.feed.ImagePost
-import com.example.lurk.screens.feed.Post
+import com.example.lurk.screens.feed.postviews.GifPost
+import com.example.lurk.screens.feed.postviews.ImagePost
+import com.example.lurk.screens.feed.postviews.Post
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
