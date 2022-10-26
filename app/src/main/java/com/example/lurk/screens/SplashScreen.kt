@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.example.lurk.ui_components.NavBarItem
+import com.example.lurk.ui.components.NavBarItem
 import com.example.lurk.viewmodels.LoginViewModel
 import com.google.accompanist.navigation.animation.composable
 

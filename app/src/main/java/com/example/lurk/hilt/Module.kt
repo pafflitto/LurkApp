@@ -3,8 +3,8 @@ package com.example.lurk.hilt
 import android.content.Context
 import com.example.lurk.RedditImageLoader
 import com.example.lurk.RedditImageLoaderImpl
-import com.example.lurk.api.RedditApi
-import com.example.lurk.api.RedditAuthApi
+import com.example.lurk.data.api.RedditApi
+import com.example.lurk.data.api.RedditAuthApi
 import com.example.lurk.datastores.RedditAuthDataStore
 import com.example.lurk.datastores.UserPreferencesDataStore
 import com.example.lurk.repositories.RedditAuthRepo

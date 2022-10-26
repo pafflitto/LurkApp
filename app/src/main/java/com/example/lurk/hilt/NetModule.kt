@@ -1,8 +1,8 @@
 package com.example.lurk.hilt
 
-import com.example.lurk.api.RedditApi
-import com.example.lurk.api.RedditApiConstants
-import com.example.lurk.api.RedditAuthApi
+import com.example.lurk.data.api.RedditApi
+import com.example.lurk.data.api.RedditApiConstants
+import com.example.lurk.data.api.RedditAuthApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.DefineComponent

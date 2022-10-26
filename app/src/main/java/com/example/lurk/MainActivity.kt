@@ -20,14 +20,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.lurk.api.RedditApiConstants
+import com.example.lurk.data.api.RedditApiConstants
 import com.example.lurk.screens.*
-import com.example.lurk.screens.expanded_media_screen.ExpandedMedia
-import com.example.lurk.screens.expanded_media_screen.ExpandedMediaScreen
+import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMedia
+import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMediaScreen
 import com.example.lurk.screens.feed.feedScreen
+import com.example.lurk.screens.settings.settingsScreen
 import com.example.lurk.ui.theme.LurkTheme
-import com.example.lurk.ui_components.LurkBottomBar
-import com.example.lurk.ui_components.NavBarItem.Home
+import com.example.lurk.ui.components.LurkBottomBar
+import com.example.lurk.ui.components.NavBarItem.Home
 import com.example.lurk.viewmodels.FeedViewModel
 import com.example.lurk.viewmodels.LoginViewModel
 import com.gfycat.core.GfyCoreInitializationBuilder
@@ -104,7 +105,10 @@ class MainActivity : ComponentActivity() {
                         drawerGesturesEnabled = navBackStackEntry?.destination?.route == Home.route,
                         drawerContent = {
                             SubredditSelectionScreen(feedViewModel) {
-                                scope.launch { scaffoldState.drawerState.close() }
+                                scope.launch {
+                                    scaffoldState.drawerState.close()
+                                    feedListState.scrollToItem(0)
+                                }
                             }
                         }
                     ) {

@@ -1,15 +1,16 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.lurk.screens.feed
 
 import android.content.res.Configuration
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -24,18 +25,19 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
-import com.example.lurk.screens.expanded_media_screen.ExpandedMedia
+import com.example.lurk.screens.feed.expanded_media_screen.ExpandedMedia
 import com.example.lurk.screens.feed.Post.Companion.Voted
-import com.example.lurk.screens.feed.post_views.PostView
 import com.example.lurk.ui.theme.LurkTheme
-import com.example.lurk.ui_components.MainPageScreen
-import com.example.lurk.ui_components.NavBarItem
-import com.example.lurk.ui_components.pageEnterTransition
-import com.example.lurk.ui_components.pageExitTransition
+import com.example.lurk.ui.components.MainPageScreen
+import com.example.lurk.ui.components.NavBarItem
+import com.example.lurk.ui.components.pageEnterTransition
+import com.example.lurk.ui.components.pageExitTransition
 import com.example.lurk.viewmodels.FeedState
 import com.example.lurk.viewmodels.FeedViewModel
 import com.google.accompanist.navigation.animation.composable
 import com.google.android.exoplayer2.ExoPlayer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -58,6 +60,7 @@ fun NavGraphBuilder.feedScreen(
     )
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun FeedScreen(
     expandedMedia: ExpandedMedia?,
@@ -79,42 +82,66 @@ fun FeedScreen(
         animationSpec = tween(300)
     )
 
+    val scope = rememberCoroutineScope()
     val feedState by viewModel.feedStateFlow.collectAsState()
     val subreddit by viewModel.currentSubredditFlow.collectAsState()
+
+    val postsState = when(val state = feedState) {
+        is FeedState.Loading -> PostState.Loading
+        is FeedState.Loaded -> {
+            val posts = state.feed.postFlow.collectAsLazyPagingItems()
+            if (posts.loadState.refresh is LoadState.Loading) {
+                PostState.Loading
+            } else PostState.Loaded(posts)
+        }
+        is FeedState.Error -> PostState.Error
+    }
 
     MainPageScreen(
         title = subreddit,
         titleFontSize = subredditTextSize.sp
     ) {
-        when (val state = feedState) {
-            is FeedState.Loading -> LoadingScreen()
-            is FeedState.Loaded -> {
-                val posts = state.feed.postFlow.collectAsLazyPagingItems()
-
-                if (posts.loadState.refresh is LoadState.Loading) {
-                    LoadingScreen()
+        AnimatedContent(
+            targetState = postsState,
+            transitionSpec = {
+                if (targetState is PostState.Loaded && initialState !is PostState.Loaded) {
+                    slideInVertically { it / 10 } with fadeOut()
                 } else {
-                    FeedScreenContent(
-                        posts = posts,
-                        listState = listState,
-                        updateVoteStatus = viewModel::voteStatusUpdated,
-                        subredditSelected = viewModel::updateSubreddit,
-                        expandMedia = expandedMediaChange,
-                        expandedMedia = expandedMedia,
-                        updateTopVisibleItems = viewModel::updateVisibleItems,
-                        gifExoPlayers = viewModel.gifExoPlayers
-                    )
+                    fadeIn() with
+                            scaleOut(targetScale = 0.95f) +
+                            slideOutVertically { it / 10 } +
+                            fadeOut(animationSpec = tween(200))
                 }
-
             }
-            else -> {
-                // Nothing for now
-                Text("ERROR")
+        ) { state ->
+            when (state) {
+                is PostState.Loading -> LoadingScreen()
+                is PostState.Loaded ->
+                        FeedScreenContent(
+                            posts = state.posts,
+                            listState = listState,
+                            updateVoteStatus = viewModel::voteStatusUpdated,
+                            subredditSelected = {
+                                scope.launch {
+                                    viewModel.updateSubreddit(it)
+                                    delay(200)
+                                    listState.scrollToItem(0)
+                                }
+                            },
+                            expandMedia = expandedMediaChange,
+                            expandedMedia = expandedMedia,
+                            updateTopVisibleItems = viewModel::updateVisibleItems,
+                            gifExoPlayers = viewModel.gifExoPlayers
+                        )
+                else -> {
+                    // Nothing for now
+                    Text("ERROR")
+                }
             }
         }
     }
-
 }
+
 
 @Composable
 fun FeedScreenContent(
@@ -148,7 +175,6 @@ private fun LoadingScreen() = Box(Modifier.fillMaxSize()) {
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun Posts(
     posts: LazyPagingItems<Post>,
@@ -184,6 +210,7 @@ private fun Posts(
                 // Create the map to send to the exoplayer map that will load these items
                 val gifMap =
                     visibleItems.filter { itemsToLoad.contains(it.index) }.mapNotNull { item ->
+                        if (item.index >= posts.itemCount) return@mapNotNull null
                         posts[item.index]?.let { post ->
                             if (post is GifPost) {
                                 // Key is a pair, first is the index and second is if we should play the gif
@@ -203,6 +230,7 @@ private fun Posts(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(8.dp),
         state = listState
     ) {
@@ -222,6 +250,12 @@ private fun Posts(
                     },
                     gifExoPlayers = gifExoPlayers
                 )
+            }
+        }
+
+        if (posts.loadState.append is LoadState.Loading) {
+            item {
+                CircularProgressIndicator()
             }
         }
     }
@@ -261,4 +295,10 @@ fun FeedScreenPreviewLight() {
             }
         }
     }
+}
+
+private sealed class PostState {
+    object Loading : PostState()
+    data class Loaded(val posts: LazyPagingItems<Post>) : PostState()
+    object Error : PostState()
 }
