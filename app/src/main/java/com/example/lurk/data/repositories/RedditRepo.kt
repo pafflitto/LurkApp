@@ -33,11 +33,6 @@ class RedditRepoImpl(
     private val imageLoader: RedditImageLoader
 ) : RedditRepo {
 
-    inner class PagingLocation(
-        val before: String?,
-        val after: String?
-    )
-
     override suspend fun getSubreddit(
         subreddit: String,
         scope: CoroutineScope

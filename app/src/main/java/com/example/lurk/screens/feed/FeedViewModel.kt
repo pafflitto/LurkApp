@@ -38,7 +38,7 @@ class FeedViewModel @Inject constructor(
     var subredditSearchText by mutableStateOf("")
     var subredditSearchResults by mutableStateOf(emptyList<String>())
 
-    private val _feedState = MutableStateFlow<FeedState>(FeedState.Loading)
+    private val _feedState = MutableStateFlow<FeedState>(FeedState.Loading(false))
     val feedStateFlow: StateFlow<FeedState> = _feedState
 
     private val _userSubreddits = MutableStateFlow<Map<String, List<UserSubreddit>>>(emptyMap())
@@ -62,15 +62,16 @@ class FeedViewModel @Inject constructor(
         updateSubreddits()
     }
 
-    fun updateSubreddit(subreddit: String) = viewModelScope.launch {
+    fun updateSubreddit(subreddit: String, refresh: Boolean = false) = viewModelScope.launch {
         _currentSubreddit.tryEmit(subreddit.toTitleCase())
-        _feedState.tryEmit(FeedState.Loading)
+        _feedState.tryEmit(FeedState.Loading(refresh))
         redditRepo.getSubreddit(
             subreddit = subreddit,
             scope = viewModelScope
         ).onSuccess {
             _feedState.tryEmit(
                 FeedState.Loaded(
+                    fromRefresh = refresh,
                     feed = it
                 )
             )
@@ -97,6 +98,8 @@ class FeedViewModel @Inject constructor(
             }
     }
 
+    fun refreshFeed() = updateSubreddit(_currentSubreddit.value, true)
+
     fun searchForSubreddit(query: String) = viewModelScope.launch {
         subredditSearchText = query
         redditRepo.subredditSearch(subredditSearchText).onSuccess {
@@ -121,9 +124,12 @@ class FeedViewModel @Inject constructor(
 }
 
 sealed class FeedState {
-    object Loading : FeedState()
+    data class Loading(
+        val refresh: Boolean
+    ) : FeedState()
     object Error : FeedState()
     data class Loaded(
+        val fromRefresh: Boolean,
         val feed : Feed
     ) : FeedState()
 }
