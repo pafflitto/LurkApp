@@ -39,19 +39,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.lurk.R
 import com.example.lurk.screens.feed.FeedViewModel
-import com.example.lurk.screens.login.UserSubreddit
+import com.example.lurk.screens.feed.UserSubreddit
 
 @Composable
 fun SubredditSelectionScreen(
     viewModel: FeedViewModel,
     closeDrawer: () -> Unit
 ) {
-    val userSubreddits by viewModel.userSubredditsFlow.collectAsState()
-    val subreddit by viewModel.currentSubredditFlow.collectAsState()
-
+    val subreddits by viewModel.userSubreddits.collectAsState()
     SubredditSelectionScreenContent(
-        currentSubreddit = subreddit,
-        subreddits = userSubreddits,
+        currentSubreddit = viewModel.currentSubreddit,
+        subreddits = subreddits,
         subredditSearchText = viewModel.subredditSearchText,
         subredditSearchTextChange = viewModel::searchForSubreddit,
         subredditSearchResults = viewModel.subredditSearchResults,
@@ -113,7 +111,7 @@ fun SubredditSelectionScreenContent(
                                 subredditSelected = {},
                                 subredditFavoriteToggle = {_,_ ->},
                                 currentSubreddit = true,
-                                modifier = Modifier.padding(top = 8.dp)
+                                modifier = Modifier.animateItemPlacement().padding(top = 8.dp)
                             )
                         }
                         subreddits.forEach { entry ->
@@ -128,6 +126,7 @@ fun SubredditSelectionScreenContent(
                                 items = entry.value,
                             ) { item ->
                                 SubredditCard(
+                                    modifier = Modifier.animateItemPlacement(),
                                     userSubreddit = item,
                                     subredditSelected = {
                                         focusManager.clearFocus(true)
@@ -138,7 +137,7 @@ fun SubredditSelectionScreenContent(
                             }
                         }
                         item {
-                            Spacer(modifier = Modifier.height(72.dp))
+                            Spacer(modifier = Modifier.height(100.dp))
                         }
                     }
                 }

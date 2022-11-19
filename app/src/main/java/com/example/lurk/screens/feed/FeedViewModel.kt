@@ -13,7 +13,6 @@ import com.example.lurk.data.repositories.RedditRepo
 import com.example.lurk.data.updateVisibleItems
 import com.example.lurk.extensions.toTitleCase
 import com.example.lurk.screens.feed.postviews.Post
-import com.example.lurk.screens.login.UserSubreddit
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -38,14 +37,10 @@ class FeedViewModel @Inject constructor(
     var subredditSearchText by mutableStateOf("")
     var subredditSearchResults by mutableStateOf(emptyList<String>())
 
-    private val _feedState = MutableStateFlow<FeedState>(FeedState.Loading(false))
-    val feedStateFlow: StateFlow<FeedState> = _feedState
-
+    var feedState by mutableStateOf<FeedState>(FeedState.Loading(false))
     private val _userSubreddits = MutableStateFlow<Map<String, List<UserSubreddit>>>(emptyMap())
-    val userSubredditsFlow: StateFlow<Map<String, List<UserSubreddit>>> = _userSubreddits
-
-    private val _currentSubreddit = MutableStateFlow("Popular")
-    val currentSubredditFlow: StateFlow<String> = _currentSubreddit
+    val userSubreddits: StateFlow<Map<String, List<UserSubreddit>>> = _userSubreddits
+    var currentSubreddit by mutableStateOf("Popular")
 
     private fun buildExoPlayer(url: String) = ExoPlayer.Builder(getApplication())
         .setSeekForwardIncrementMs(5000)
@@ -58,22 +53,20 @@ class FeedViewModel @Inject constructor(
         }
 
     init {
-        updateSubreddit("popular")
+        updateSubreddit("Popular")
         updateSubreddits()
     }
 
     fun updateSubreddit(subreddit: String, refresh: Boolean = false) = viewModelScope.launch {
-        _currentSubreddit.tryEmit(subreddit.toTitleCase())
-        _feedState.tryEmit(FeedState.Loading(refresh))
+        currentSubreddit = subreddit.toTitleCase()
+        feedState = FeedState.Loading(refresh)
         redditRepo.getSubreddit(
             subreddit = subreddit,
             scope = viewModelScope
         ).onSuccess {
-            _feedState.tryEmit(
-                FeedState.Loaded(
-                    fromRefresh = refresh,
-                    feed = it
-                )
+            feedState = FeedState.Loaded(
+                fromRefresh = refresh,
+                feed = it
             )
         }
     }
@@ -91,14 +84,14 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    fun updateSubreddits() = viewModelScope.launch {
+    private fun updateSubreddits() = viewModelScope.launch {
         redditRepo.userSubreddits()
-            .onSuccess {
-                _userSubreddits.tryEmit(it)
+            .onSuccess { subreddits ->
+                _userSubreddits.value = subreddits
             }
     }
 
-    fun refreshFeed() = updateSubreddit(_currentSubreddit.value, true)
+    fun refreshFeed() = updateSubreddit(currentSubreddit, true)
 
     fun searchForSubreddit(query: String) = viewModelScope.launch {
         subredditSearchText = query
@@ -107,8 +100,9 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    fun toggleFavoriteSubreddit(subreddit: String, currentlyFavorited: Boolean) = viewModelScope.launch {
-        redditRepo.toggleFavoriteSubreddit(subreddit, !currentlyFavorited)
+    fun toggleFavoriteSubreddit(subreddit: String, currentValue: Boolean) = viewModelScope.launch {
+        redditRepo.toggleFavoriteSubreddit(subreddit, !currentValue)
+        updateSubreddits()
     }
 
     fun clearSubredditSearchText() {
@@ -133,3 +127,6 @@ sealed class FeedState {
         val feed : Feed
     ) : FeedState()
 }
+
+data class UserSubreddit(val name: String, val favorited: Boolean? = null)
+

@@ -85,8 +85,6 @@ fun FeedScreen(
     )
 
     val scope = rememberCoroutineScope()
-    val feedState by viewModel.feedStateFlow.collectAsState()
-    val subreddit by viewModel.currentSubredditFlow.collectAsState()
     var refreshing by remember { mutableStateOf(false) }
     val refreshingState = rememberPullRefreshState(
         refreshing = refreshing,
@@ -110,7 +108,7 @@ fun FeedScreen(
     }
     var postsState by remember { mutableStateOf<PostState>(PostState.Loading) }
 
-    when (val state = feedState) {
+    when (val state = viewModel.feedState) {
         is FeedState.Loading -> {
             if (!state.refresh) {
                 postsState = PostState.Loading
@@ -135,7 +133,7 @@ fun FeedScreen(
     }
 
     MainPageScreen(
-        title = subreddit,
+        title = viewModel.currentSubreddit,
         titleFontSize = subredditTextSize.sp
     ) {
         AnimatedContent(
@@ -159,7 +157,8 @@ fun FeedScreen(
                         modifier = Modifier.pullRefresh(refreshingState)
                     ) {
                         AnimatedVisibility(
-                            visible = refreshingState.progress != 0f || refreshing
+                            visible = refreshingState.progress != 0f || refreshing,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         ) {
                             if (refreshing) {
                                 LinearProgressIndicator(

@@ -29,8 +29,6 @@ class LoginViewModel @Inject constructor(
     val hasAccess: StateFlow<Boolean> = authRepo.userHasAccess(viewModelScope)
 }
 
-data class UserSubreddit(val name: String, val favorited: Boolean? = null)
-
 enum class SortingType {
     BEST,
     POPULAR,

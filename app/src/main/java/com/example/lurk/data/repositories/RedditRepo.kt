@@ -7,10 +7,11 @@ import androidx.paging.cachedIn
 import com.example.lurk.RedditImageLoader
 import com.example.lurk.data.api.RedditApi
 import com.example.lurk.data.datastores.UserPreferencesDataStore
+import com.example.lurk.data.repositories.RedditRepo.Companion.favoriteSectionTitle
 import com.example.lurk.extensions.toTitleCase
+import com.example.lurk.screens.feed.UserSubreddit
 import com.example.lurk.screens.feed.postviews.Post
 import com.example.lurk.screens.login.SortingType
-import com.example.lurk.screens.login.UserSubreddit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 
@@ -22,6 +23,10 @@ interface RedditRepo : Repo {
     suspend fun subredditSearch(query: String): Result<List<String>>
     suspend fun userSubreddits(): Result<Map<String, List<UserSubreddit>>>
     suspend fun toggleFavoriteSubreddit(subreddit: String, shouldSave: Boolean)
+
+    companion object {
+        const val favoriteSectionTitle = "Favorites"
+    }
 }
 /**
  * Repository to handle the content calls to Reddit's api
@@ -94,7 +99,7 @@ class RedditRepoImpl(
                 val url = it.data.url
                 val displayName =
                     url.substring(3, url.length - 1).replaceFirstChar(Char::titlecase)
-                val isFavorite = favoriteSubreddits.contains(displayName.lowercase())
+                val isFavorite = favoriteSubreddits.contains(displayName)
 
                 val userSubreddit = UserSubreddit(name = displayName, favorited = isFavorite)
 
@@ -106,7 +111,7 @@ class RedditRepoImpl(
             }.sortedBy { it.name }.groupBy { it.name.first().toString() }
 
             if (favSubredditList.isNotEmpty()) {
-                subredditMap["Favorites"] = favSubredditList.sortedBy { it.name }
+                subredditMap[favoriteSectionTitle] = favSubredditList.sortedBy { it.name }
             }
 
             subredditMap.putAll(userSubreddits)
@@ -120,7 +125,7 @@ class RedditRepoImpl(
     }
 
     override suspend fun toggleFavoriteSubreddit(subreddit: String, shouldSave: Boolean) = userPreferencesDataStore
-        .saveRemoveFavoriteSubreddit(subreddit = subreddit, shouldSave = true)
+        .saveRemoveFavoriteSubreddit(subreddit = subreddit, shouldSave = shouldSave)
 
 
     private suspend fun getAuthHeader(): HashMap<String, String> = hashMapOf(
