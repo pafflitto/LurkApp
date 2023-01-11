@@ -88,7 +88,7 @@ open class Post(data: PostData)
                 numComments = 587,
                 ups = 10000,
                 downs = 10000,
-                selftext = "Example of a text post. GRACIE IS THE BEST GF OF ALL TIME. SHE MAKES ME LAUGH EVERYDAY. I WANT TO SNOG HER FACE"
+                selftext = "Example text of post"
             )
         )
 
