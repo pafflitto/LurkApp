@@ -208,7 +208,7 @@ fun SubredditSelectionScreenContent(
                                         }
                                     },
                                 colors = TextFieldDefaults.textFieldColors(
-                                    textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                     containerColor = Color.Transparent,
                                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = MaterialTheme.colorScheme.onPrimaryContainer

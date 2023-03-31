@@ -154,7 +154,7 @@ fun FeedScreen(
                 is PostState.Loaded ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.pullRefresh(refreshingState)
+                        modifier = Modifier.pullRefresh(refreshingState).fillMaxSize()
                     ) {
                         AnimatedVisibility(
                             visible = refreshingState.progress != 0f || refreshing,

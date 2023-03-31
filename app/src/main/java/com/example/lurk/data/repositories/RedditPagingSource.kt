@@ -7,6 +7,7 @@ import com.example.lurk.RedditImageLoader
 import com.example.lurk.screens.feed.postviews.GifPost
 import com.example.lurk.screens.feed.postviews.ImagePost
 import com.example.lurk.screens.feed.postviews.Post
+import com.example.lurk.screens.feed.postviews.VideoPost
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,8 +55,13 @@ class RedditPagingSource(
                                 imageLoader.loadImage(url)
                             }
                         }
+                        is VideoPost -> {
+                            post.thumbnail = post.thumbnailUrl?.let { url ->
+                                imageLoader.loadImage(url)
+                            }
+                        }
                         is ImagePost -> {
-                            post.image = imageLoader.loadImage(post.url)
+                            post.image.value = imageLoader.loadImage(post.url)
                         }
                     }
                 }

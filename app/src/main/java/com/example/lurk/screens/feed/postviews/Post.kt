@@ -3,6 +3,7 @@ package com.example.lurk.screens.feed.postviews
 import PostData
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import androidx.compose.runtime.mutableStateOf
 import com.example.lurk.extensions.format
 import com.example.lurk.screens.feed.postviews.Post.Companion.PostType.*
 import kotlin.math.round
@@ -46,19 +47,18 @@ open class Post(data: PostData)
             DownVoted,
             NoVote
         }
-        private enum class PostType(val postHint: String) {
-            IMAGE("image"),
-            GIF(""),
-            TEXT("");
+        private enum class PostType {
+            IMAGE,
+            GIF,
+            TEXT,
+            VIDEO;
         }
 
-        private fun getType(data: PostData): PostType? {
-            return when {
-                data.isSelf -> TEXT
-                data.url.contains(".gif") ||
-                !data.isVideo && data.postHint.contains("video")-> GIF
-                else -> typeMap[data.postHint]
-            }
+        private val PostData.type: PostType? get() = when {
+            isSelf -> TEXT
+            isVideo || url.contains("youtube") -> VIDEO
+            GifPost.GifType.gifType(this) != null -> GIF
+            else -> typeMap[postHint]
         }
 
         private val typeMap = mapOf(
@@ -72,10 +72,11 @@ open class Post(data: PostData)
         fun build(
             data: PostData,
         ): Post {
-            return when(getType(data)) {
+            return when(data.type) {
                 IMAGE -> ImagePost(data)
                 TEXT -> TextPost(data)
                 GIF -> GifPost(data)
+                VIDEO -> VideoPost(data)
                 else -> Post(data)
             }
         }
@@ -117,12 +118,15 @@ class ImagePost(
     data: PostData,
 ): Post(data = data) {
     val url: String = data.url // URL for post
-    var image: Drawable? = null
+    val image = mutableStateOf<Drawable?>(null)
 }
 
 class GifPost(
     data: PostData
 ): Post(data = data) {
+    val type = GifType.gifType(data)
+
+    // TODO Change this based on type
     val url: String = when {
         data.domain.contains("gfycat") -> {
             val regex = Regex("(?<=image=).*(?=-)")
@@ -142,9 +146,56 @@ class GifPost(
                 mp4Resolution.url.replace("amp;", "")
             } ?: ""
         }
+        data.secureMedia != null -> {
+            data.secureMedia!!.redditVideo.dashUrl
+        }
         else -> data.url
     }
 
     val thumbnailUrl = data.preview.images.firstOrNull()?.resolutions?.maxByOrNull { it.width }?.url?.replace("amp;", "")
+
+    // This gets loaded in our paging source
+    var thumbnail: Drawable? = null
+
+    sealed class GifType {
+        object VReddit : GifType()
+        object Direct : GifType()
+        object GfyCat : GifType()
+        object Imgur : GifType()
+        object Streamable : GifType()
+
+        companion object {
+            fun gifType(data: PostData): GifType? {
+                val realURL = data.url.lowercase()
+                return when {
+                    realURL.contains("v.redd.it") -> {
+                        VReddit
+                    }
+                    realURL.contains(".mp4")
+                            || realURL.contains(".gif")
+                            || realURL.contains("webm")
+                            || realURL.contains("redditmedia.com")
+                            || realURL.contains("preview.redd.it") -> {
+                        Direct
+                    }
+                    (realURL.contains("gfycat") && !realURL.contains("mp4"))
+                            && (realURL.contains("redgifs") && !realURL.contains("mp4")) -> {
+                        GfyCat
+                    }
+                    realURL.contains("imgur.com") -> Imgur
+                    realURL.contains("streamable.com") -> Streamable
+                    else -> null
+                }
+            }
+        }
+    }
+}
+
+class VideoPost(
+    data: PostData
+): Post(data = data) {
+    val thumbnailUrl = data.preview.images.firstOrNull()?.resolutions?.maxByOrNull { it.width }?.url?.replace("amp;", "")
+
+    // This gets loaded in our paging source
     var thumbnail: Drawable? = null
 }

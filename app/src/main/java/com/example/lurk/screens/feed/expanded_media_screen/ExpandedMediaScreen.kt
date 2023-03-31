@@ -75,7 +75,7 @@ fun ExpandedMediaScreen(
             when(post) {
                 is ImagePost -> {
                     Image(
-                        painter = rememberDrawablePainter(drawable = post.image),
+                        painter = rememberDrawablePainter(drawable = post.image.value),
                         contentDescription = null,
                         contentScale = ContentScale.Fit,
                         modifier = Modifier

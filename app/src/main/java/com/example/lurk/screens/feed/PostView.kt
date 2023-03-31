@@ -65,6 +65,7 @@ fun PostView(
                     post = post,
                     expandMedia = expandMedia
                 )
+                is VideoPost -> VideoPostView(post = post)
                 is GifPost -> {
                     GifPostView(
                         post = post,

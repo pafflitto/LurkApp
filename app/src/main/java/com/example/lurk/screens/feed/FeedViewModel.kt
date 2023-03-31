@@ -48,6 +48,7 @@ class FeedViewModel @Inject constructor(
         .build().apply {
             playWhenReady = false
             repeatMode = Player.REPEAT_MODE_ALL
+            volume = 0f
             addMediaItem(MediaItem.fromUri(url))
             prepare()
         }

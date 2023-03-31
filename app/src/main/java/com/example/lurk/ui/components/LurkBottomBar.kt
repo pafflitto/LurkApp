@@ -17,10 +17,11 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import com.example.lurk.screens.login.LoginViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.lurk.screens.Screen
+import com.example.lurk.screens.isPage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -30,14 +31,13 @@ fun LurkBottomBar(
     navController: NavController,
     feedListState: LazyListState,
     openDrawer: () -> Unit,
-    viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val hasAccess by viewModel.hasAccess.collectAsState()
     val scope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
+    val currentEntry by navController.currentBackStackEntryAsState()
 
     AnimatedVisibility(
-        visible = hasAccess,
+        visible = !currentEntry.isPage(Screen.Splash) && !currentEntry.isPage(Screen.Login),
         enter = slideInVertically(initialOffsetY = { it / 2 }),
         exit = fadeOut()
     ) {
@@ -87,8 +87,6 @@ private fun LurkBottomBarContent(
                 )
             )
             .fillMaxWidth(),
-        contentColor = Color.Transparent,
-        containerColor = Color.Transparent,
         tonalElevation = 0.dp
     ) {
         NavBarItem.values().forEachIndexed { index, item ->
